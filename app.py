@@ -228,12 +228,36 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
 .stCaption, small { color: #7a7260 !important; font-style: italic; }
 
 /* ── Expanders ── */
-.streamlit-expanderHeader {
+.streamlit-expanderHeader,
+[data-testid="stExpander"] summary,
+[data-testid="stExpander"] > div:first-child {
     background-color: #006747 !important;
     color: white !important;
     border-radius: 4px !important;
     font-family: 'Source Sans 3', sans-serif !important;
     font-weight: 600 !important;
+}
+[data-testid="stExpander"] summary p,
+[data-testid="stExpander"] summary span {
+    color: white !important;
+}
+[data-testid="stExpander"] > div:last-child p,
+[data-testid="stExpander"] > div:last-child span,
+[data-testid="stExpander"] > div:last-child label,
+[data-testid="stExpander"] > div:last-child div {
+    color: #1a1a1a !important;
+}
+
+/* ── Pick display text (my picks lookup) ── */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] strong {
+    color: #1a1a1a !important;
+}
+
+/* ── Success / info / warning box text ── */
+[data-testid="stAlert"] p,
+[data-testid="stAlert"] span {
+    color: #1a1a1a !important;
 }
 
 /* ── Top Nav Bar — fixed white bar, always at top ── */
@@ -434,14 +458,27 @@ def get_worksheet():
         return None
 
 
+SHEET_COLUMNS = ["Name"] + list(TIERS.keys()) + ["PIN", "Submitted At"]
+
 @st.cache_data(ttl=30)
 def load_picks_from_sheet():
     ws = get_worksheet()
     if ws is None:
         return None
     try:
-        records = ws.get_all_records()
-        return pd.DataFrame(records) if records else pd.DataFrame()
+        all_vals = ws.get_all_values()
+        if not all_vals:
+            return pd.DataFrame()
+        # Always use our known column order, ignoring whatever headers are in the sheet
+        data_rows = all_vals[1:]  # skip header row
+        if not data_rows:
+            return pd.DataFrame()
+        df = pd.DataFrame(data_rows, columns=SHEET_COLUMNS[:len(all_vals[0])])
+        # If sheet has fewer columns than expected (e.g. no PIN column yet), fill missing
+        for col in SHEET_COLUMNS:
+            if col not in df.columns:
+                df[col] = ""
+        return df
     except Exception as e:
         st.warning(f"Could not load picks: {e}")
         return pd.DataFrame()
@@ -469,8 +506,13 @@ def save_picks(name: str, picks_by_tier: dict, pin: str = "") -> bool:
     ws = get_worksheet()
     if ws is not None:
         try:
-            records = ws.get_all_records()
-            names = [r.get("Name", "") for r in records]
+            all_vals = ws.get_all_values()
+            # Always ensure header row matches current structure
+            if not all_vals or all_vals[0] != SHEET_COLUMNS:
+                ws.update("A1", [SHEET_COLUMNS])
+                all_vals = ws.get_all_values()
+            data_rows = all_vals[1:]
+            names = [r[0] for r in data_rows if r]
             if name in names:
                 idx = names.index(name) + 2  # +1 for header, +1 for 1-indexing
                 ws.update(f"A{idx}", [row_vals])
