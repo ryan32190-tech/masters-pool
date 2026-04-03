@@ -996,8 +996,8 @@ def render_standings_view(picks_df, lb_data, lb_error):
     st.markdown('<div class="page-title">Pool Standings</div>', unsafe_allow_html=True)
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
 
-    # ── Cut line info bar ──────────────────────────────────────────────────────
-    if lb_data and not lb_data["leaderboard"].empty:
+    # ── Cut line info bar — only show once Masters has started ────────────────
+    if picks_are_locked() and lb_data and not lb_data["leaderboard"].empty:
         lb = lb_data["leaderboard"]
         round_num  = lb_data.get("round", 1)
         cut_score  = lb_data.get("cut_score")
@@ -1037,18 +1037,23 @@ def render_standings_view(picks_df, lb_data, lb_error):
         return
 
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+    tournament_started = picks_are_locked()
 
     # Summary table
     rows = []
     place = 1
     for entry in standings:
-        if entry["dq"]:
-            rows.append({"Place": "❌ DQ", "Participant": entry["participant"],
-                         "Score": "DQ", "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
+        if tournament_started:
+            if entry["dq"]:
+                rows.append({"Place": "❌ DQ", "Participant": entry["participant"],
+                             "Score": "DQ", "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
+            else:
+                rows.append({"Place": medals.get(place, str(place)), "Participant": entry["participant"],
+                             "Score": entry["total_display"], "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
+                place += 1
         else:
-            rows.append({"Place": medals.get(place, str(place)), "Participant": entry["participant"],
-                         "Score": entry["total_display"], "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
-            place += 1
+            rows.append({"Place": "—", "Participant": entry["participant"],
+                         "Score": "n/a", "Making Cut": "-/-"})
     st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
     st.markdown("<div style='height:1.5rem'></div>", unsafe_allow_html=True)
