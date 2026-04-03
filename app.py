@@ -1379,9 +1379,9 @@ lb_data, lb_error = fetch_leaderboard()
 picks_df     = load_picks()
 using_sheets = get_worksheet() is not None
 
-tournament_name = lb_data["tournament"] if lb_data else "Masters Tournament"
+tournament_name = "Masters Tournament"
 status_str  = lb_data["status"] if lb_data else ""
-status_icon = {"In Progress": "🟢", "Final": "🏁", "Scheduled": "🕐"}.get(status_str, "📡")
+status_icon = {"In Progress": "🟢", "Final": "🏁", "Scheduled": "🕐"}.get(status_str, "")
 now_str     = datetime.now().strftime("%I:%M %p ET")
 
 # ── TOP NAV BAR — fixed white bar with real HTML text links ──────────────────
@@ -1407,7 +1407,7 @@ st.markdown(f"""
         {POOL_NAME}
     </div>
     <div class="topnav-right">
-        {status_icon}&nbsp;{tournament_name}&nbsp;·&nbsp;{now_str}
+        {"" if not status_icon else status_icon + "&nbsp;"}{tournament_name}&nbsp;·&nbsp;{now_str}
     </div>
 </div>
 """, unsafe_allow_html=True)
