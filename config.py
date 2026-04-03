@@ -54,7 +54,7 @@ TIERS = {
     "Tier 4": [
         "Cameron Young",       # +2350
         "Tommy Fleetwood",     # +2500
-        "Matt Fitzpatrick",    # +2600
+        "Matthew Fitzpatrick",  # +2600
         "Collin Morikawa",     # +3100
     ],
     "Tier 5": [
@@ -66,7 +66,7 @@ TIERS = {
     "Tier 6": [
         "Robert MacIntyre",    # +4000
         "Russell Henley",      # +4200
-        "Chris Gotterup",      # +4300
+        "Christopher Gotterup", # +4300
         "Patrick Reed",        # +4500
         "Viktor Hovland",      # +4600
     ],
@@ -103,14 +103,14 @@ TIERS = {
     "Tier 11": [
         "Max Homa",            # +11500
         "Sungjae Im",          # +12000
-        "J.J. Spaun",          # +12000
+        "J. J. Spaun",         # +12000
         "Rasmus Hojgaard",     # +13000
         "Keegan Bradley",      # +14000
         "Harry Hall",          # +16000
     ],
     "Tier 12": [
         "Marco Penge",         # +16000
-        "Alex Noren",          # +16000
+        "Alexander Noren",     # +16000
         "Ryan Gerard",         # +17000
         "Nick Taylor",         # +19500
         "Aaron Rai",           # +19500
@@ -123,10 +123,10 @@ TIERS = {
         "Tom McKibbin", "Haotong Li", "Nico Echavarria", "Kristoffer Reitan",
         "Rasmus Neergaard-Petersen", "John Keefer", "Michael Kim", "Andrew Novak",
         "Aldrich Potgieter", "Michael Brennan", "Sami Valimaki", "Davis Riley",
-        "Charl Schwartzel", "Bubba Watson", "Zach Johnson", "Brian Campbell",
+        "Charl Schwartzel", "Bubba Watson", "Zach Johnson", "Ben Campbell",
         "Ethan Fang", "Danny Willett", "Pongsapak Laopakdee", "Vijay Singh",
         "Mason Howell", "Mateo Pulcini", "Jackson Herrington", "Angel Cabrera",
-        "Naoyuki Kataoka", "Brandon Holtz", "Mike Weir", "Fred Couples",
+        "Naoyuki Kataoka", "Brandon Wu", "Mike Weir", "Fred Couples",
         "Jose Maria Olazabal",
     ],
 }
