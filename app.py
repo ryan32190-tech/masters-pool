@@ -1358,35 +1358,68 @@ def render_submit_view(picks_df):
         f"Total: {TOTAL_PICKS} picks. You can resubmit to update before Round 1 starts."
     )
 
-    # Let them look up their existing picks before resubmitting
-    with st.expander("👀 Check what you already submitted"):
+    # ── Load existing picks to pre-fill form ──────────────────────────────────
+    with st.expander("👀 Already submitted? Load your picks to edit them"):
         name_check = st.text_input("Your name:", placeholder="First Last", key="name_check")
         pin_check  = st.text_input("Your PIN:", placeholder="4 digits", max_chars=4, key="pin_check")
-        if name_check.strip() and pin_check.strip():
-            _render_my_picks(name_check.strip(), pin_check.strip(), picks_df)
+
+        if name_check.strip() and pin_check.strip() and not picks_df.empty:
+            row_match = picks_df[picks_df["Name"].str.strip().str.lower() == name_check.strip().lower()]
+            if row_match.empty:
+                st.info("No picks found for that name — check the spelling matches what you submitted.")
+            else:
+                row_data = row_match.iloc[0]
+                stored_pin = str(row_data.get("PIN", "") or "").strip()
+                if stored_pin and pin_check.strip() != stored_pin:
+                    st.error("❌ Incorrect PIN — please try again.")
+                else:
+                    st.success(f"✅ Picks found for **{name_check.strip()}** — click below to load them into the form.")
+                    if st.button("✏️ Load my picks into the form", type="primary"):
+                        # Pre-fill session state for each tier widget
+                        for tier in TIERS.keys():
+                            val = str(row_data.get(tier, "") or "").strip()
+                            selections = [v.strip() for v in val.split(",") if v.strip()]
+                            n = PICKS_PER_TIER[tier]
+                            if n == 1:
+                                st.session_state[f"pick_{tier}"] = selections[0] if selections else "— select —"
+                            else:
+                                st.session_state[f"pick_{tier}"] = selections
+                        # Pre-fill name and PIN
+                        st.session_state["prefill_name"] = name_check.strip()
+                        st.session_state["prefill_pin"]  = pin_check.strip()
+                        st.rerun()
 
     st.markdown("---")
 
     with st.form("picks_form"):
-        participant_name = st.text_input("Your Name *", placeholder="First Last")
-        participant_pin  = st.text_input(
-            "Choose a 4-digit PIN *",
+        participant_name = st.text_input(
+            "Your Name *",
+            placeholder="First Last",
+            value=st.session_state.get("prefill_name", ""),
+        )
+        participant_pin = st.text_input(
+            "Your 4-digit PIN *",
             placeholder="e.g. 1234",
             max_chars=4,
-            help="You'll need this PIN to view your picks later. Keep it simple — just 4 digits.",
+            value=st.session_state.get("prefill_pin", ""),
+            help="You'll need this PIN to view or edit your picks later.",
         )
 
         all_picks: dict[str, list] = {}
         for tier, players in TIERS.items():
             n = PICKS_PER_TIER[tier]
             if n == 1:
+                options = ["— select —"] + players
+                current = st.session_state.get(f"pick_{tier}", "— select —")
+                idx = options.index(current) if current in options else 0
                 st.markdown(f"**{tier}**")
-                choice = st.radio(tier, options=["— select —"] + players,
+                choice = st.radio(tier, options=options, index=idx,
                                   label_visibility="collapsed", key=f"pick_{tier}", horizontal=True)
                 all_picks[tier] = [] if choice == "— select —" else [choice]
             else:
+                current = st.session_state.get(f"pick_{tier}", [])
                 st.markdown(f"**{tier}** — pick any {n}")
-                choices = st.multiselect(tier, options=players, max_selections=n,
+                choices = st.multiselect(tier, options=players, default=current, max_selections=n,
                                          label_visibility="collapsed", key=f"pick_{tier}")
                 all_picks[tier] = choices
 
@@ -1406,6 +1439,9 @@ def render_submit_view(picks_df):
                     st.error(err)
             else:
                 if save_picks(participant_name.strip(), all_picks, pin=participant_pin.strip()):
+                    # Clear prefill state after successful save
+                    for key in ["prefill_name", "prefill_pin"] + [f"pick_{t}" for t in TIERS.keys()]:
+                        st.session_state.pop(key, None)
                     st.success(f"✅ Picks saved for **{participant_name.strip()}**! Remember your PIN: **{participant_pin.strip()}** 🤞")
                     st.balloons()
 
