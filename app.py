@@ -156,7 +156,39 @@ h2, h3 {
     border-color: #c9a84c !important;
     border-radius: 3px !important;
     background-color: #ffffff !important;
+    color: #1a1a1a !important;
 }
+.stTextInput > div > div > input::placeholder { color: #888888 !important; }
+.stTextInput label, .stMultiSelect label, .stSelectbox label,
+.stRadio label, .stCheckbox label, .stNumberInput label {
+    color: #1a1a1a !important;
+    font-weight: 500 !important;
+}
+
+/* Radio button option text */
+.stRadio > div > label,
+.stRadio > div > label > div,
+.stRadio [data-testid="stMarkdownContainer"] p,
+div[role="radiogroup"] label,
+div[role="radiogroup"] label span,
+div[role="radiogroup"] p {
+    color: #1a1a1a !important;
+}
+
+/* Multiselect tags and options */
+.stMultiSelect [data-baseweb="tag"] span,
+.stMultiSelect [data-baseweb="select"] span,
+.stMultiSelect span { color: #1a1a1a !important; }
+
+/* General markdown and text in forms */
+.stForm p, .stForm span, .stForm div,
+[data-testid="stForm"] p,
+[data-testid="stForm"] label,
+[data-testid="stForm"] span { color: #1a1a1a !important; }
+
+/* Password / login input */
+[data-testid="stTextInput"] input { color: #1a1a1a !important; }
+
 .stRadio > label { font-weight: 600 !important; color: #1a3a2a !important; }
 
 /* ── DataFrames ── */
