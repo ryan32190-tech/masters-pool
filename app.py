@@ -1291,6 +1291,8 @@ def render_odds_view():
     caption = f"Outright winner odds · {book_name}" if book_name else "Outright winner odds"
     st.caption(caption)
 
+    missing = [r["Player"] for _, r in df.iterrows() if r["Odds"] == "—"]
+
     for tier in TIERS.keys():
         tier_df = df[df["Tier"] == tier].copy()
         if tier_df.empty:
@@ -1312,6 +1314,18 @@ def render_odds_view():
             height=35 * len(display_df) + 38,
         )
         st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+
+    # Debug expander to identify name mismatches
+    if missing:
+        with st.expander(f"⚠️ {len(missing)} player(s) with no odds — click to diagnose"):
+            st.markdown("**Players in your tiers with no matching odds:**")
+            for p in missing:
+                st.markdown(f"- {p}")
+            st.markdown("---")
+            st.markdown("**All names returned by the API:**")
+            api_names = sorted(info["name"] for info in odds_map.values())
+            for n in api_names:
+                st.markdown(f"- {n}")
 
 
 def _render_my_picks(name: str, pin: str, picks_df: pd.DataFrame):
