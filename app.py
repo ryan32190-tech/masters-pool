@@ -26,7 +26,7 @@ import pytz
 from streamlit_autorefresh import st_autorefresh
 from config import (
     POOL_NAME, PICKS_PER_TIER, TIERS, TOTAL_PICKS, SCORING_PICKS,
-    ESPN_URL, REFRESH_INTERVAL_SECONDS, PICKS_SHEET_TAB,
+    ESPN_URL, REFRESH_INTERVAL_SECONDS, PICKS_SHEET_TAB, CHAT_SHEET_TAB,
     FIRST_ROUND_START, LOCK_PICKS_ON_START, PRIZES, BUY_IN,
     ODDS_API_URL, ODDS_PREFERRED_BOOK,
 )
@@ -226,6 +226,30 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
 
 /* ── Captions ── */
 .stCaption, small { color: #7a7260 !important; font-style: italic; }
+
+/* ── Chat ── */
+.chat-container {
+    display: flex; flex-direction: column; gap: 0.6rem;
+    max-height: 480px; overflow-y: auto;
+    padding: 1rem; background: #f9f7f2;
+    border: 1px solid #e0ddd5; border-radius: 6px;
+    margin-bottom: 1rem;
+}
+.chat-bubble {
+    background: #ffffff; border: 1px solid #e0ddd5;
+    border-radius: 8px; padding: 0.6rem 0.9rem;
+    max-width: 85%;
+}
+.chat-bubble-name {
+    font-weight: 700; color: #006747; font-size: 0.85rem;
+}
+.chat-bubble-time {
+    font-size: 0.75rem; color: #999; margin-left: 0.5rem;
+}
+.chat-bubble-text {
+    margin-top: 0.2rem; color: #1a1a1a; font-size: 0.95rem;
+    white-space: pre-wrap; word-break: break-word;
+}
 
 /* ── Expanders ── */
 .streamlit-expanderHeader,
@@ -533,6 +557,57 @@ def save_picks(name: str, picks_by_tier: dict, pin: str = "") -> bool:
             [df, pd.DataFrame([new_row])], ignore_index=True
         )
         return True
+
+
+# ── CHAT ─────────────────────────────────────────────────────────────────────
+CHAT_COLUMNS = ["Name", "Message", "Timestamp"]
+
+def get_chat_worksheet():
+    client = get_sheets_client()
+    if not client:
+        return None
+    sid = st.secrets.get("SPREADSHEET_ID", "")
+    if not sid:
+        return None
+    try:
+        spreadsheet = client.open_by_key(sid)
+        try:
+            return spreadsheet.worksheet(CHAT_SHEET_TAB)
+        except Exception:
+            # Create the Chat tab if it doesn't exist
+            ws = spreadsheet.add_worksheet(title=CHAT_SHEET_TAB, rows=1000, cols=3)
+            ws.append_row(CHAT_COLUMNS)
+            return ws
+    except Exception as e:
+        return None
+
+
+@st.cache_data(ttl=15)  # refresh chat more frequently
+def load_chat_messages():
+    ws = get_chat_worksheet()
+    if ws is None:
+        return pd.DataFrame(columns=CHAT_COLUMNS)
+    try:
+        all_vals = ws.get_all_values()
+        if len(all_vals) <= 1:
+            return pd.DataFrame(columns=CHAT_COLUMNS)
+        return pd.DataFrame(all_vals[1:], columns=CHAT_COLUMNS)
+    except Exception:
+        return pd.DataFrame(columns=CHAT_COLUMNS)
+
+
+def save_chat_message(name: str, message: str) -> bool:
+    ws = get_chat_worksheet()
+    if ws is None:
+        return False
+    try:
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+        ws.append_row([name.strip(), message.strip(), ts])
+        load_chat_messages.clear()
+        return True
+    except Exception as e:
+        st.error(f"Could not send message: {e}")
+        return False
 
 
 # ── ESPN LEADERBOARD ──────────────────────────────────────────────────────────
@@ -1466,6 +1541,55 @@ def render_submit_view(picks_df):
                     st.balloons()
 
 
+def render_chat_view():
+    st.markdown('<div class="page-title">Pool Chat</div>', unsafe_allow_html=True)
+    st.caption("Chat with the rest of the pool — messages refresh every 15 seconds.")
+
+    messages = load_chat_messages()
+
+    # ── Message feed ──────────────────────────────────────────────────────────
+    if messages.empty:
+        st.info("No messages yet — be the first to say something! 👇")
+    else:
+        # Show oldest → newest, render as bubbles
+        bubbles_html = '<div class="chat-container">'
+        for _, msg in messages.iterrows():
+            name = str(msg.get("Name", "")).strip() or "Anonymous"
+            text = str(msg.get("Message", "")).strip()
+            time = str(msg.get("Timestamp", "")).strip()
+            if not text:
+                continue
+            # Show just the time portion (HH:MM) for readability
+            time_short = time.split(" ")[-1] if " " in time else time
+            bubbles_html += f"""
+            <div class="chat-bubble">
+                <span class="chat-bubble-name">{name}</span>
+                <span class="chat-bubble-time">{time_short}</span>
+                <div class="chat-bubble-text">{text}</div>
+            </div>"""
+        bubbles_html += "</div>"
+        st.markdown(bubbles_html, unsafe_allow_html=True)
+
+    # ── Send form ─────────────────────────────────────────────────────────────
+    with st.form("chat_form", clear_on_submit=True):
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            sender_name = st.text_input("Your name", placeholder="First Last",
+                                        value=st.session_state.get("chat_name", ""))
+        with col2:
+            message_text = st.text_input("Message", placeholder="Type something…", max_chars=300)
+        send = st.form_submit_button("Send 💬", type="primary", use_container_width=True)
+        if send:
+            if not sender_name.strip():
+                st.error("Please enter your name.")
+            elif not message_text.strip():
+                st.error("Message can't be empty.")
+            else:
+                st.session_state["chat_name"] = sender_name.strip()
+                if save_chat_message(sender_name.strip(), message_text.strip()):
+                    st.rerun()
+
+
 # ── MAIN ──────────────────────────────────────────────────────────────────────
 st_autorefresh(interval=REFRESH_INTERVAL_SECONDS * 1000, key="auto_refresh")
 
@@ -1495,6 +1619,7 @@ st.markdown(f"""
                 <a href="?_a=1&view=leaderboard" class="dropdown-item" target="_self">Tournament Leaderboard</a>
                 <a href="?_a=1&view=prizes"      class="dropdown-item" target="_self">Prize Pool</a>
                 <a href="?_a=1&view=odds"        class="dropdown-item" target="_self">Player Odds</a>
+                <a href="?_a=1&view=chat"        class="dropdown-item" target="_self">💬 Pool Chat</a>
             </div>
         </div>
         <a href="{submit_href}" class="nav-link" target="_self">✏️&nbsp; Submit Picks</a>
@@ -1518,4 +1643,5 @@ if   view == "standings":   render_standings_view(picks_df, lb_data, lb_error)
 elif view == "leaderboard": render_leaderboard_view(lb_data, lb_error)
 elif view == "prizes":      render_prizes_view(picks_df, lb_data)
 elif view == "odds":        render_odds_view()
+elif view == "chat":        render_chat_view()
 elif view == "submit":      render_submit_view(picks_df)

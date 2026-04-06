@@ -163,6 +163,7 @@ ODDS_PREFERRED_BOOK = "draftkings"
 
 # ── GOOGLE SHEETS ─────────────────────────────────────────────────────────────
 PICKS_SHEET_TAB = "Picks"
+CHAT_SHEET_TAB  = "Chat"
 
 # ── TOURNAMENT DATES ──────────────────────────────────────────────────────────
 # Picks lock when the first round starts.
