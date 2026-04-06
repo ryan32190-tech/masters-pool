@@ -1478,7 +1478,8 @@ def render_submit_view(picks_df):
                             if n == 1:
                                 st.session_state[f"pick_{tier}"] = selections[0] if selections else "— select —"
                             else:
-                                st.session_state[f"pick_{tier}"] = selections
+                                # Truncate to current max in case picks were saved under old rules
+                                st.session_state[f"pick_{tier}"] = selections[:n]
                         # Pre-fill name and PIN
                         st.session_state["prefill_name"] = name_check.strip()
                         st.session_state["prefill_pin"]  = pin_check.strip()
