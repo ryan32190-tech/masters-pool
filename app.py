@@ -647,6 +647,10 @@ def fetch_leaderboard():
         t_name = tournament.get("name", "Unknown")
         t_status = tournament.get("status", {}).get("type", {}).get("description", "")
 
+        # Only use data if it's actually the Masters — ignore all other tournaments
+        if "masters" not in t_name.lower():
+            return None, None   # Silently return no data (not an error)
+
         competitions = tournament.get("competitions", [])
         if not competitions:
             return {"tournament": t_name, "status": t_status,
