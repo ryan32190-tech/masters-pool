@@ -11,7 +11,7 @@ POOL_NAME = "Masters Pool 2026"
 # Each participant picks 15 players (see TIERS below for how many per tier).
 # Only the 8 BEST (lowest) scores among their picks count toward their total.
 # If fewer than 8 of their 15 picks make the cut, they are DISQUALIFIED.
-TOTAL_PICKS = 15
+TOTAL_PICKS = 14
 SCORING_PICKS = 8   # Best N scores count
 
 # ── TIER STRUCTURE ────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ PICKS_PER_TIER = {
     "Tier 9":      1,
     "Tier 10":     1,
     "Tier 11":     1,
-    "Tiers 12-14": 4,   # Combined longshot tier — pick any 4
+    "Tiers 12-14": 3,   # Combined longshot tier — pick any 3
 }
 
 # Player lists — update these from Vegas odds before the tournament.
@@ -115,7 +115,7 @@ TIERS = {
         "Brian Harman",        # +20000
     ],
     "Tiers 12-14": [
-        # Pick any 4 from this longshot pool
+        # Pick any 3 from this longshot pool
         "Sam Stevens", "Ryan Fox", "Sergio Garcia", "Wyndham Clark",
         "Max Greyserman", "Dustin Johnson", "Casey Jarvis", "Carlos Ortiz",
         "Tom McKibbin", "Haotong Li", "Nico Echavarria", "Kristoffer Reitan",
