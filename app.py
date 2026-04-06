@@ -1371,9 +1371,10 @@ def render_submit_view(picks_df):
     # ── Pre-tournament: submit / update picks ─────────────────────────────────
     n_single = sum(1 for t, n in PICKS_PER_TIER.items() if n == 1)
     n_combo  = sum(n for t, n in PICKS_PER_TIER.items() if n > 1)
+    combo_tier = next(t for t, n in PICKS_PER_TIER.items() if n > 1)
     st.info(
         f"Pick **1 player from each of Tiers 1–{n_single}**, then "
-        f"**{n_combo} players from the combined Tiers 13–15 pool**. "
+        f"**{n_combo} players from the {combo_tier} pool**. "
         f"Total: {TOTAL_PICKS} picks. You can resubmit to update before Round 1 starts."
     )
 

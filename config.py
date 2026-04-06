@@ -15,15 +15,15 @@ TOTAL_PICKS = 15
 SCORING_PICKS = 8   # Best N scores count
 
 # ── TIER STRUCTURE ────────────────────────────────────────────────────────────
-# Tier 1-2: combined top tier — pick exactly 1 player.
-# Tiers 3–12: pick exactly 1 player from each.
-# Tiers 13–15: combined longshot pool — pick any 4 from the list.
+# Tiers 1–11: pick exactly 1 player from each.
+# Tiers 12–14: combined longshot pool — pick any 4 from the list.
 #
 # Update player lists each year from Vegas odds (typically 1 week before
 # the tournament). Add or remove tiers by editing both TIERS and PICKS_PER_TIER.
 
 PICKS_PER_TIER = {
-    "Tier 1-2":    1,   # Combined — pick 1 from this group
+    "Tier 1":      1,
+    "Tier 2":      1,
     "Tier 3":      1,
     "Tier 4":      1,
     "Tier 5":      1,
@@ -33,51 +33,49 @@ PICKS_PER_TIER = {
     "Tier 9":      1,
     "Tier 10":     1,
     "Tier 11":     1,
-    "Tier 12":     1,
-    "Tiers 13-15": 4,   # Combined longshot tier — pick 4 from the big list
+    "Tiers 12-14": 4,   # Combined longshot tier — pick any 4
 }
 
 # Player lists — update these from Vegas odds before the tournament.
-# The example below mirrors the US Open 2025 pool format.
 TIERS = {
     # ── 2026 Masters — tiered by Vegas odds ──
-    "Tier 1-2": [
+    "Tier 1": [
         "Scottie Scheffler",   # +410
         "Jon Rahm",            # +850
         "Rory McIlroy",        # +1025
         "Bryson DeChambeau",   # +1100
     ],
-    "Tier 3": [
+    "Tier 2": [
         "Ludvig Aberg",        # +1750
         "Xander Schauffele",   # +1850
     ],
-    "Tier 4": [
+    "Tier 3": [
         "Cameron Young",       # +2350
         "Tommy Fleetwood",     # +2500
-        "Matthew Fitzpatrick",  # +2600
+        "Matthew Fitzpatrick", # +2600
         "Collin Morikawa",     # +3100
     ],
-    "Tier 5": [
+    "Tier 4": [
         "Justin Rose",         # +3600
         "Jordan Spieth",       # +3800
         "Brooks Koepka",       # +3800
         "Hideki Matsuyama",    # +3900
     ],
-    "Tier 6": [
+    "Tier 5": [
         "Robert MacIntyre",    # +4000
         "Russell Henley",      # +4200
         "Christopher Gotterup", # +4300
         "Patrick Reed",        # +4500
         "Viktor Hovland",      # +4600
     ],
-    "Tier 7": [
+    "Tier 6": [
         "Si Woo Kim",          # +4700
         "Min Woo Lee",         # +5400
         "Justin Thomas",       # +5500
         "Patrick Cantlay",     # +5700
         "Adam Scott",          # +6200
     ],
-    "Tier 8": [
+    "Tier 7": [
         "Akshay Bhatia",       # +6500
         "Sepp Straka",         # +6700
         "Jason Day",           # +6900
@@ -85,14 +83,14 @@ TIERS = {
         "Tyrrell Hatton",      # +6900
         "Shane Lowry",         # +7000
     ],
-    "Tier 9": [
+    "Tier 8": [
         "Sam Burns",           # +7200
         "Corey Conners",       # +8200
         "Nicolai Hojgaard",    # +8400
         "Kurt Kitayama",       # +8800
         "Jacob Bridgeman",     # +9400
     ],
-    "Tier 10": [
+    "Tier 9": [
         "Maverick McNealy",    # +9800
         "Cameron Smith",       # +10000
         "Harris English",      # +10500
@@ -100,7 +98,7 @@ TIERS = {
         "Ben Griffin",         # +11000
         "Daniel Berger",       # +11000
     ],
-    "Tier 11": [
+    "Tier 10": [
         "Max Homa",            # +11500
         "Sungjae Im",          # +12000
         "J. J. Spaun",         # +12000
@@ -108,7 +106,7 @@ TIERS = {
         "Keegan Bradley",      # +14000
         "Harry Hall",          # +16000
     ],
-    "Tier 12": [
+    "Tier 11": [
         "Marco Penge",         # +16000
         "Alexander Noren",     # +16000
         "Ryan Gerard",         # +17000
@@ -116,8 +114,8 @@ TIERS = {
         "Aaron Rai",           # +19500
         "Brian Harman",        # +20000
     ],
-    "Tiers 13-15": [
-        # Pick any 3 from this longshot pool
+    "Tiers 12-14": [
+        # Pick any 4 from this longshot pool
         "Sam Stevens", "Ryan Fox", "Sergio Garcia", "Wyndham Clark",
         "Max Greyserman", "Dustin Johnson", "Casey Jarvis", "Carlos Ortiz",
         "Tom McKibbin", "Haotong Li", "Nico Echavarria", "Kristoffer Reitan",
