@@ -1459,35 +1459,43 @@ def render_submit_view(picks_df):
 
     # ── Load existing picks to pre-fill form ──────────────────────────────────
     with st.expander("👀 Already submitted? Load your picks to edit them"):
-        name_check = st.text_input("Your name:", placeholder="First Last", key="name_check")
-        pin_check  = st.text_input("Your PIN:", placeholder="4 digits", max_chars=4, key="pin_check")
+        if picks_df.empty:
+            st.info("No submissions on file yet.")
+        else:
+            existing_names = sorted(picks_df["Name"].str.strip().dropna().unique().tolist())
+            name_check = st.selectbox(
+                "Select your name:",
+                options=["— select —"] + existing_names,
+                key="name_check",
+            )
+            pin_check = st.text_input("Your PIN:", placeholder="4 digits", max_chars=4, key="pin_check")
 
-        if name_check.strip() and pin_check.strip() and not picks_df.empty:
-            row_match = picks_df[picks_df["Name"].str.strip().str.lower() == name_check.strip().lower()]
-            if row_match.empty:
-                st.info("No picks found for that name — check the spelling matches what you submitted.")
-            else:
-                row_data = row_match.iloc[0]
-                stored_pin = str(row_data.get("PIN", "") or "").strip()
-                if stored_pin and pin_check.strip() != stored_pin:
-                    st.error("❌ Incorrect PIN — please try again.")
+            if name_check != "— select —" and pin_check.strip() and not picks_df.empty:
+                row_match = picks_df[picks_df["Name"].str.strip() == name_check]
+                if row_match.empty:
+                    st.info("No picks found — try selecting a different name.")
                 else:
-                    st.success(f"✅ Picks found for **{name_check.strip()}** — click below to load them into the form.")
-                    if st.button("✏️ Load my picks into the form", type="primary"):
-                        # Pre-fill session state for each tier widget
-                        for tier in TIERS.keys():
-                            val = str(row_data.get(tier, "") or "").strip()
-                            selections = [v.strip() for v in val.split(",") if v.strip()]
-                            n = PICKS_PER_TIER[tier]
-                            if n == 1:
-                                st.session_state[f"pick_{tier}"] = selections[0] if selections else "— select —"
-                            else:
-                                # Truncate to current max in case picks were saved under old rules
-                                st.session_state[f"pick_{tier}"] = selections[:n]
-                        # Pre-fill name and PIN
-                        st.session_state["prefill_name"] = name_check.strip()
-                        st.session_state["prefill_pin"]  = pin_check.strip()
-                        st.rerun()
+                    row_data = row_match.iloc[0]
+                    stored_pin = str(row_data.get("PIN", "") or "").strip()
+                    if stored_pin and pin_check.strip() != stored_pin:
+                        st.error("❌ Incorrect PIN — please try again.")
+                    else:
+                        st.success(f"✅ Picks found for **{name_check}** — click below to load them into the form.")
+                        if st.button("✏️ Load my picks into the form", type="primary"):
+                            # Pre-fill session state for each tier widget
+                            for tier in TIERS.keys():
+                                val = str(row_data.get(tier, "") or "").strip()
+                                selections = [v.strip() for v in val.split(",") if v.strip()]
+                                n = PICKS_PER_TIER[tier]
+                                if n == 1:
+                                    st.session_state[f"pick_{tier}"] = selections[0] if selections else "— select —"
+                                else:
+                                    # Truncate to current max in case picks were saved under old rules
+                                    st.session_state[f"pick_{tier}"] = selections[:n]
+                            # Pre-fill name and PIN
+                            st.session_state["prefill_name"] = name_check
+                            st.session_state["prefill_pin"]  = pin_check.strip()
+                            st.rerun()
 
     st.markdown("---")
 
