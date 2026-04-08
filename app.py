@@ -1075,30 +1075,34 @@ def render_standings_view(picks_df, lb_data, lb_error):
     st.markdown('<div class="page-title">Pool Standings</div>', unsafe_allow_html=True)
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
 
-    # ── Cut line info bar — only show once Masters has started ────────────────
+    # ── Cut line info bar — only show Round 2 onwards ────────────────────────
     if picks_are_locked() and lb_data and not lb_data["leaderboard"].empty:
         lb = lb_data["leaderboard"]
         round_num  = lb_data.get("round", 1)
         cut_score  = lb_data.get("cut_score")
         status_str = lb_data.get("status", "")
 
-        # Official cut line (ESPN provided it)
-        if cut_score is not None:
-            cut_label = f"✂️ Cut line: **{_fmt(cut_score)}**"
-        else:
-            # Project from the worst active score while the round is live
-            active_scores = lb[lb["made_cut"]]["score_int"]
-            if not active_scores.empty:
-                projected = active_scores.max()
-                cut_label = f"✂️ Projected cut: **{_fmt(projected)}** or better"
+        # No cut line projection during Round 1 — too early to be meaningful
+        if round_num >= 2:
+            if cut_score is not None:
+                cut_label = f"✂️ Cut line: **{_fmt(cut_score)}**"
             else:
-                cut_label = None
+                # Project from the worst active score during Round 2
+                active_scores = lb[lb["made_cut"]]["score_int"]
+                if not active_scores.empty:
+                    projected = active_scores.max()
+                    cut_label = f"✂️ Projected cut: **{_fmt(projected)}** or better"
+                else:
+                    cut_label = None
 
-        if cut_label:
-            info_parts = [cut_label, f"Round {round_num} of 4"]
-            if status_str:
-                info_parts.append(status_str)
-            st.info("  ·  ".join(info_parts))
+            if cut_label:
+                info_parts = [cut_label, f"Round {round_num} of 4"]
+                if status_str:
+                    info_parts.append(status_str)
+                st.info("  ·  ".join(info_parts))
+        else:
+            # Round 1 — just show round info, no cut line
+            st.info(f"Round {round_num} of 4  ·  {status_str}" if status_str else f"Round {round_num} of 4")
 
     if lb_error:
         st.warning(f"⚠️ Leaderboard unavailable: {lb_error}")
@@ -1246,11 +1250,13 @@ def render_leaderboard_view(lb_data, lb_error):
 
     col_a, col_b = st.columns(2)
     with col_a:
-        if lb_data.get("cut_score") is not None:
-            st.info(f"✂️ Cut line: **{_fmt(lb_data['cut_score'])}**")
-        elif not lb[lb["made_cut"]].empty:
-            worst = lb[lb["made_cut"]]["score_int"].max()
-            st.info(f"✂️ Projected cut: **{_fmt(worst)}** or better")
+        if round_num >= 2:
+            if lb_data.get("cut_score") is not None:
+                st.info(f"✂️ Cut line: **{_fmt(lb_data['cut_score'])}**")
+            elif not lb[lb["made_cut"]].empty:
+                worst = lb[lb["made_cut"]]["score_int"].max()
+                st.info(f"✂️ Projected cut: **{_fmt(worst)}** or better")
+        # Round 1 — no cut line shown
     with col_b:
         st.caption(f"Round {round_num} of 4 · Auto-refreshes every {REFRESH_INTERVAL_SECONDS}s · Data via ESPN")
 
