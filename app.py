@@ -1497,7 +1497,8 @@ def render_submit_view(picks_df):
                             st.session_state["prefill_pin"]  = pin_check.strip()
                             st.rerun()
 
-    st.markdown("---")
+    with st.expander("✏️ First Time Entry", expanded=True):
+        st.caption("New to the pool? Fill out your picks below and hit Submit.")
 
     with st.form("picks_form"):
         participant_name = st.text_input(
