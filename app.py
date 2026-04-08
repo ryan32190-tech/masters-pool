@@ -1555,6 +1555,55 @@ def render_submit_view(picks_df):
                     st.balloons()
 
 
+def render_distribution_view(picks_df):
+    st.markdown('<div class="page-title">Pick Distribution</div>', unsafe_allow_html=True)
+
+    if not picks_are_locked():
+        st.info("🔒 Pick distribution will be revealed when the Masters begins.")
+        return
+
+    if picks_df.empty:
+        st.info("No picks submitted yet.")
+        return
+
+    # Count how many times each player was picked across all tiers
+    player_counts: dict[str, int] = {}
+    total_participants = len(picks_df)
+
+    for tier in TIERS.keys():
+        for _, row in picks_df.iterrows():
+            val = str(row.get(tier, "") or "").strip()
+            players = [p.strip() for p in val.split(",") if p.strip()]
+            for player in players:
+                player_counts[player] = player_counts.get(player, 0) + 1
+
+    if not player_counts:
+        st.info("No pick data found.")
+        return
+
+    rows = []
+    for player, count in sorted(player_counts.items(), key=lambda x: -x[1]):
+        pct = (count / total_participants * 100) if total_participants else 0
+        rows.append({
+            "Player":      player,
+            "# Picked":    count,
+            "% of Pool":   f"{pct:.0f}%",
+        })
+
+    dist_df = pd.DataFrame(rows)
+    st.dataframe(
+        dist_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Player":   st.column_config.TextColumn("Player",    width=220),
+            "# Picked": st.column_config.NumberColumn("# Picked", width=100),
+            "% of Pool": st.column_config.TextColumn("% of Pool", width=100),
+        },
+        height=35 * len(dist_df) + 38,
+    )
+
+
 def render_chat_view():
     st.markdown('<div class="page-title">Pool Chat</div>', unsafe_allow_html=True)
     st.caption("Chat with the rest of the pool — messages refresh every 15 seconds.")
@@ -1629,10 +1678,11 @@ st.markdown(f"""
         <div class="nav-menu-wrapper">
             <a class="nav-link">☰&nbsp; Menu</a>
             <div class="nav-dropdown">
-                <a href="?_a=1&view=standings"   class="dropdown-item" target="_self">Pool Standings</a>
+                <a href="?_a=1&view=standings"    class="dropdown-item" target="_self">Pool Standings</a>
                 <a href="?_a=1&view=leaderboard" class="dropdown-item" target="_self">Tournament Leaderboard</a>
                 <a href="?_a=1&view=prizes"      class="dropdown-item" target="_self">Prize Pool</a>
                 <a href="?_a=1&view=odds"        class="dropdown-item" target="_self">Player Odds</a>
+                <a href="?_a=1&view=distribution" class="dropdown-item" target="_self">Pick Distribution</a>
                 <a href="?_a=1&view=chat"        class="dropdown-item" target="_self">💬 Pool Chat</a>
             </div>
         </div>
@@ -1657,5 +1707,6 @@ if   view == "standings":   render_standings_view(picks_df, lb_data, lb_error)
 elif view == "leaderboard": render_leaderboard_view(lb_data, lb_error)
 elif view == "prizes":      render_prizes_view(picks_df, lb_data)
 elif view == "odds":        render_odds_view()
+elif view == "distribution": render_distribution_view(picks_df)
 elif view == "chat":        render_chat_view()
 elif view == "submit":      render_submit_view(picks_df)
