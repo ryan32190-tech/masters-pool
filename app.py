@@ -1293,8 +1293,8 @@ def render_prizes_view(picks_df, lb_data):
         "1st Round Leader": 0.10,
         "2nd Round Leader": 0.10,
         "3rd Round Leader": 0.10,
-        "Champion":         0.60,
-        "Runner Up":        0.10,
+        "Champion":         0.50,
+        "Runner Up":        0.20,
     }
     prize_amounts = {label: round(pot * pct) for label, pct in PRIZE_PCT.items()}
 
