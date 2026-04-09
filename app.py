@@ -1331,8 +1331,151 @@ def render_standings_view(picks_df, lb_data, lb_error):
                  column_config=col_cfg, height=35 * n_rows + 38)
 
 
+def _score_html(val: str, score_int: int | None = None) -> str:
+    """Return an HTML span with Masters score coloring.
+    Red = under par, black = even, dark grey = over par.
+    """
+    if val in (None, "", "—", "-"):
+        return '<span style="color:#888;">—</span>'
+    try:
+        n = int(score_int) if score_int is not None else int(val)
+    except (ValueError, TypeError):
+        n = None
+    if n is None:
+        return f'<span style="color:#333;">{val}</span>'
+    if n < 0:
+        color = "#c8102e"   # Masters red
+    elif n == 0:
+        color = "#1a1a1a"   # near-black for Even
+    else:
+        color = "#1a1a1a"   # over par stays dark
+    display = val if val else (_fmt(n))
+    return f'<span style="color:{color}; font-weight:700;">{display}</span>'
+
+
 def render_leaderboard_view(lb_data, lb_error):
-    st.markdown('<div class="page-title">Tournament Leaderboard</div>', unsafe_allow_html=True)
+    # ── Masters-style scoreboard CSS ─────────────────────────────────────────
+    st.markdown("""
+    <style>
+    .masters-bg {
+        background: linear-gradient(180deg, #5b9bd5 0%, #7ab8e8 30%, #5aaa5a 68%, #2d7a2d 100%);
+        padding: 28px 12px 36px 12px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .masters-board {
+        max-width: 860px;
+        margin: 0 auto;
+        background: #f2ede0;
+        border: 6px solid #2d5a27;
+        border-radius: 4px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+        overflow: hidden;
+    }
+    .masters-board-cap {
+        background: #f2ede0;
+        border-bottom: 3px solid #2d5a27;
+        text-align: center;
+        padding: 10px 0 6px 0;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        color: #1a1a1a;
+    }
+    .masters-round-badge {
+        display: inline-block;
+        background: #006747;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 2px 10px;
+        border-radius: 12px;
+        margin-left: 12px;
+        vertical-align: middle;
+        position: relative;
+        top: -3px;
+    }
+    .masters-table-wrap {
+        overflow-y: auto;
+        max-height: 480px;
+    }
+    .masters-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 0.88rem;
+    }
+    .masters-table thead th {
+        position: sticky;
+        top: 0;
+        background: #2d5a27;
+        color: #f2ede0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.10em;
+        text-align: center;
+        padding: 7px 6px;
+        border-right: 1px solid #3d7a33;
+        white-space: nowrap;
+        z-index: 2;
+    }
+    .masters-table thead th.player-th {
+        text-align: left;
+        padding-left: 12px;
+    }
+    .masters-table tbody tr {
+        border-bottom: 1px solid #ccc8b8;
+    }
+    .masters-table tbody tr:nth-child(even) {
+        background: #eae5d4;
+    }
+    .masters-table tbody tr:hover {
+        background: #ddd8c4;
+    }
+    .masters-table td {
+        text-align: center;
+        padding: 7px 6px;
+        border-right: 1px solid #ccc8b8;
+        color: #1a1a1a;
+        white-space: nowrap;
+    }
+    .masters-table td.player-td {
+        text-align: left;
+        padding-left: 12px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        min-width: 160px;
+    }
+    .masters-table td.pos-td {
+        font-weight: 700;
+        color: #444;
+        font-size: 0.82rem;
+        min-width: 36px;
+    }
+    .masters-cut-divider td {
+        background: #2d5a27 !important;
+        color: #f2ede0 !important;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.10em;
+        text-align: center;
+        padding: 5px 6px;
+    }
+    .masters-footer {
+        background: #2d5a27;
+        color: #c8d8c0;
+        text-align: center;
+        font-size: 0.7rem;
+        padding: 6px;
+        letter-spacing: 0.06em;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     if lb_error:
         st.warning(lb_error)
@@ -1343,38 +1486,116 @@ def render_leaderboard_view(lb_data, lb_error):
         st.info("🏌️ No scores yet — the tournament hasn't started.")
         return
 
-    lb = lb_data["leaderboard"]
+    lb        = lb_data["leaderboard"]
     round_num = lb_data.get("round", 1)
-
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if round_num >= 2:
-            if lb_data.get("cut_score") is not None:
-                st.info(f"✂️ Cut line: **{_fmt(lb_data['cut_score'])}**")
-            elif not lb[lb["made_cut"]].empty:
-                worst = lb[lb["made_cut"]]["score_int"].max()
-                st.info(f"✂️ Projected cut: **{_fmt(worst)}** or better")
-        # Round 1 — no cut line shown
-    with col_b:
-        st.caption(f"Round {round_num} of 4 · Auto-refreshes every {REFRESH_INTERVAL_SECONDS}s · Data via ESPN")
+    status_str = lb_data.get("status", "")
 
     active = lb[lb["made_cut"]].copy()
     cut    = lb[~lb["made_cut"]].copy()
 
-    def display_lb(df):
-        cols = ["position", "name", "score", "today", "thru"]
-        for r in ["R1", "R2", "R3", "R4"]:
-            if r in df.columns and df[r].notna().any():
-                cols.append(r)
-        subset = df[cols].copy()
-        subset.rename(columns={"position": "Pos", "name": "Player", "score": "Total",
-                                "today": "Today", "thru": "Thru"}, inplace=True)
-        st.dataframe(subset, use_container_width=True, hide_index=True)
+    # Which round columns exist?
+    round_cols = [r for r in ["R1", "R2", "R3", "R4"]
+                  if r in lb.columns and lb[r].notna().any()]
 
-    display_lb(active)
+    # ── Cut line info ─────────────────────────────────────────────────────────
+    cut_line_html = ""
+    if round_num >= 2:
+        if lb_data.get("cut_score") is not None:
+            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">✂ Cut: {_fmt(lb_data["cut_score"])}</span>'
+        elif not active.empty:
+            worst = int(active["score_int"].max())
+            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">✂ Proj. Cut: {_fmt(worst)} or better</span>'
+
+    # ── Build header row ──────────────────────────────────────────────────────
+    r_headers = "".join(f"<th>{r}</th>" for r in round_cols)
+    thead = f"""
+    <thead>
+      <tr>
+        <th>POS</th>
+        <th class="player-th">PLAYER</th>
+        <th>TOTAL</th>
+        <th>TODAY</th>
+        <th>THRU</th>
+        {r_headers}
+      </tr>
+    </thead>"""
+
+    def player_rows(df, grey=False):
+        rows_html = ""
+        for _, row in df.iterrows():
+            score_int = row.get("score_int", None)
+            try:
+                score_int = int(score_int)
+            except (ValueError, TypeError):
+                score_int = None
+
+            today_val = row.get("today", "—")
+            try:
+                today_int = int(today_val) if today_val not in ("—", "", None) else None
+            except (ValueError, TypeError):
+                today_int = None
+
+            r_cells = ""
+            for r in round_cols:
+                rv = row.get(r, "—")
+                try:
+                    rv_int = int(rv) if rv not in ("—", "", None) else None
+                except (ValueError, TypeError):
+                    rv_int = None
+                r_cells += f"<td>{_score_html(str(rv) if rv not in ('—', '', None) else '—', rv_int)}</td>"
+
+            style = ' style="opacity:0.65;"' if grey else ""
+            rows_html += f"""
+            <tr{style}>
+              <td class="pos-td">{row.get("position","—")}</td>
+              <td class="player-td">{row.get("name","")}</td>
+              <td>{_score_html(str(row.get("score","—")), score_int)}</td>
+              <td>{_score_html(str(today_val), today_int)}</td>
+              <td>{row.get("thru","—")}</td>
+              {r_cells}
+            </tr>"""
+        return rows_html
+
+    active_rows = player_rows(active)
+
+    cut_section = ""
     if not cut.empty:
-        with st.expander(f"✂️ Missed Cut / WD / DQ ({len(cut)} players)"):
-            display_lb(cut)
+        n_cut_cols = 5 + len(round_cols)
+        cut_section = f"""
+        <tr class="masters-cut-divider">
+          <td colspan="{n_cut_cols}">✂&nbsp; MISSED CUT / WD / DQ ({len(cut)} players)</td>
+        </tr>
+        {player_rows(cut, grey=True)}"""
+
+    refresh_note = f"Round {round_num} of 4  ·  refreshes every {REFRESH_INTERVAL_SECONDS}s  ·  via ESPN"
+    if status_str:
+        refresh_note = f"{status_str}  ·  {refresh_note}"
+
+    cut_info_bar = f'<div style="text-align:center;padding:5px 0 2px;font-size:0.8rem;">{cut_line_html}</div>' if cut_line_html else ""
+
+    html = f"""
+    <div class="masters-bg">
+      <div class="masters-board">
+        <div class="masters-board-cap">
+          LEADERS
+          <span class="masters-round-badge">ROUND {round_num}</span>
+        </div>
+        {cut_info_bar}
+        <div class="masters-table-wrap">
+          <table class="masters-table">
+            {thead}
+            <tbody>
+              {active_rows}
+              {cut_section}
+            </tbody>
+          </table>
+        </div>
+        <div class="masters-footer">{refresh_note}</div>
+      </div>
+    </div>
+    """
+
+    st.markdown(html, unsafe_allow_html=True)
 
 
 def render_prizes_view(picks_df, lb_data):
