@@ -889,13 +889,16 @@ def score_participant(picks: list[str], score_map: dict) -> dict:
             })
 
     # Players who made the cut, sorted by score (best first)
+    # Not-found players are excluded from makers count (name mismatch ≠ missed cut)
     cut_players = sorted(
-        [p for p in per_player if p["made_cut"]],
+        [p for p in per_player if p["made_cut"] and p["found"]],
         key=lambda x: x["score_int"],
     )
 
     makers = len(cut_players)
-    dq = makers < SCORING_PICKS
+    # Only DQ if we have confirmed cut players < SCORING_PICKS (ignore not-found)
+    found_count = len([p for p in per_player if p["found"]])
+    dq = found_count >= SCORING_PICKS and makers < SCORING_PICKS
 
     if dq:
         total = None
@@ -1233,6 +1236,8 @@ def render_standings_view(picks_df, lb_data, lb_error):
 
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     tournament_started = picks_are_locked()
+    round_num_s = lb_data.get("round", 1) if lb_data else 1
+    cut_col_label = "Active Picks" if round_num_s <= 1 else "Making Cut"
 
     # Fetch odds for Win Probability (only needed once tournament has started)
     odds_map = None
@@ -1247,11 +1252,11 @@ def render_standings_view(picks_df, lb_data, lb_error):
         if tournament_started:
             if entry["dq"]:
                 rows.append({"Place": "❌ DQ", "Participant": entry["participant"],
-                             "Score": "DQ", "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}",
+                             "Score": "DQ", cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}",
                              "Win Probability": "—"})
             else:
                 rows.append({"Place": medals.get(place, str(place)), "Participant": entry["participant"],
-                             "Score": entry["total_display"], "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}",
+                             "Score": entry["total_display"], cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}",
                              "Win Probability": entry.get("win_prob", "—")})
                 place += 1
         else:
