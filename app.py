@@ -920,6 +920,96 @@ def score_participant(picks: list[str], score_map: dict) -> dict:
     }
 
 
+def calc_team_strength(per_player: list, odds_map: dict | None) -> float:
+    """
+    Sum of implied win probabilities for each active (made cut) pick.
+    Uses live odds if available, falls back to 0 for unmatched players.
+    Returns a value between 0 and 1.
+    """
+    if not odds_map:
+        return 0.0
+    total = 0.0
+    for p in per_player:
+        if not p.get("made_cut"):
+            continue
+        key  = _normalize(p["name"])
+        info = odds_map.get(key)
+        if info is None:
+            last = key.split()[-1] if key.split() else key
+            info = odds_map.get(last)
+        if info:
+            total += _implied_prob(info["american"])
+    return total
+
+
+def calculate_win_probability(standings: list, odds_map: dict | None) -> list:
+    """
+    Add a win_prob percentage to each entry in standings.
+    Formula (weights): score 50%, active picks 30%, team strength 20%.
+    Scores are inverted (lower = better in golf) and normalized across the pool.
+    """
+    if not standings:
+        return standings
+
+    n = len(standings)
+
+    # ── Component 1: Score (lower is better → invert to higher = better) ──
+    valid = [e for e in standings if not e["dq"] and e["total"] is not None]
+    if valid:
+        scores = [e["total"] for e in valid]
+        min_s, max_s = min(scores), max(scores)
+        rng = max_s - min_s if max_s != min_s else 1
+        for e in standings:
+            if e["dq"] or e["total"] is None:
+                e["_score_norm"] = 0.0
+            else:
+                e["_score_norm"] = (max_s - e["total"]) / rng  # invert
+    else:
+        for e in standings:
+            e["_score_norm"] = 0.0
+
+    # ── Component 2: Active picks (makers / TOTAL_PICKS) ──
+    for e in standings:
+        e["_active_norm"] = e["makers"] / TOTAL_PICKS if not e["dq"] else 0.0
+
+    # ── Component 3: Team strength (sum of implied probs of active picks) ──
+    strengths = []
+    for e in standings:
+        ts = calc_team_strength(e["per_player"], odds_map) if not e["dq"] else 0.0
+        e["_strength"] = ts
+        strengths.append(ts)
+    max_ts = max(strengths) if max(strengths) > 0 else 1
+    for e in standings:
+        e["_strength_norm"] = e["_strength"] / max_ts
+
+    # ── Weighted composite ──
+    W_SCORE    = 0.50
+    W_ACTIVE   = 0.30
+    W_STRENGTH = 0.20
+
+    for e in standings:
+        e["_composite"] = (
+            W_SCORE    * e["_score_norm"] +
+            W_ACTIVE   * e["_active_norm"] +
+            W_STRENGTH * e["_strength_norm"]
+        )
+
+    # ── Normalize composites to sum to 100% ──
+    total_comp = sum(e["_composite"] for e in standings)
+    for e in standings:
+        if total_comp > 0:
+            e["win_prob"] = f"{e['_composite'] / total_comp * 100:.1f}%"
+        else:
+            e["win_prob"] = "—"
+
+    # Clean up temp keys
+    for e in standings:
+        for k in ["_score_norm", "_active_norm", "_strength", "_strength_norm", "_composite"]:
+            e.pop(k, None)
+
+    return standings
+
+
 def calculate_standings(picks_df: pd.DataFrame, lb_data: dict | None) -> list:
     if picks_df.empty:
         return []
@@ -1122,6 +1212,12 @@ def render_standings_view(picks_df, lb_data, lb_error):
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     tournament_started = picks_are_locked()
 
+    # Fetch odds for Win Probability (only needed once tournament has started)
+    odds_map = None
+    if tournament_started:
+        odds_map, _ = fetch_odds()
+        standings = calculate_win_probability(standings, odds_map)
+
     # Summary table
     rows = []
     place = 1
@@ -1129,10 +1225,12 @@ def render_standings_view(picks_df, lb_data, lb_error):
         if tournament_started:
             if entry["dq"]:
                 rows.append({"Place": "❌ DQ", "Participant": entry["participant"],
-                             "Score": "DQ", "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
+                             "Score": "DQ", "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}",
+                             "Win Probability": "—"})
             else:
                 rows.append({"Place": medals.get(place, str(place)), "Participant": entry["participant"],
-                             "Score": entry["total_display"], "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}"})
+                             "Score": entry["total_display"], "Making Cut": f"{entry['makers']}/{TOTAL_PICKS}",
+                             "Win Probability": entry.get("win_prob", "—")})
                 place += 1
         else:
             rows.append({"Place": "—", "Participant": entry["participant"],
