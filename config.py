@@ -170,3 +170,7 @@ CHAT_SHEET_TAB  = "Chat"
 # Picks lock when the first round starts.
 FIRST_ROUND_START = "2026-04-10 07:30"   # Eastern Time — Masters Round 1 first tee time
 LOCK_PICKS_ON_START = True
+
+# ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
+# Displayed at the top of the Pool Standings page. Set to "" to hide it.
+PSA_MESSAGE = "Hey good luck everybody! 🍀"

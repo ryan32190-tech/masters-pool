@@ -29,7 +29,7 @@ from config import (
     POOL_NAME, PICKS_PER_TIER, TIERS, TOTAL_PICKS, SCORING_PICKS,
     ESPN_URL, REFRESH_INTERVAL_SECONDS, PICKS_SHEET_TAB, CHAT_SHEET_TAB,
     FIRST_ROUND_START, LOCK_PICKS_ON_START, PRIZES, BUY_IN,
-    ODDS_API_URL, ODDS_PREFERRED_BOOK,
+    ODDS_API_URL, ODDS_PREFERRED_BOOK, PSA_MESSAGE,
 )
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────────────
@@ -1188,6 +1188,8 @@ def render_scottie_header():
 def render_standings_view(picks_df, lb_data, lb_error):
     st.markdown('<div class="page-title">Pool Standings</div>', unsafe_allow_html=True)
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
+    if PSA_MESSAGE:
+        st.info(PSA_MESSAGE)
 
     # ── Cut line info bar — only show Round 2 onwards ────────────────────────
     if picks_are_locked() and lb_data and not lb_data["leaderboard"].empty:
