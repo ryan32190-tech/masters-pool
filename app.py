@@ -1162,6 +1162,29 @@ def _implied_prob(american: int) -> float:
 
 # ── VIEW RENDERERS ────────────────────────────────────────────────────────────
 
+@st.cache_resource
+def _load_scottie_b64():
+    """Load Scottie.jpg from the repo root and return as base64 string."""
+    import base64, os
+    img_path = os.path.join(os.path.dirname(__file__), "Scottie.jpg")
+    if os.path.exists(img_path):
+        with open(img_path, "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    return None
+
+
+def render_scottie_header():
+    b64 = _load_scottie_b64()
+    if not b64:
+        return
+    st.markdown(f"""
+    <div style="display:flex; justify-content:center; margin: -8px 0 -18px 0;">
+      <img src="data:image/jpeg;base64,{b64}"
+           style="height:105px; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.18));">
+    </div>
+    """, unsafe_allow_html=True)
+
+
 def render_standings_view(picks_df, lb_data, lb_error):
     st.markdown('<div class="page-title">Pool Standings</div>', unsafe_allow_html=True)
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
@@ -1894,6 +1917,7 @@ def render_distribution_view(picks_df):
 
 
 def render_chat_view():
+    render_scottie_header()
     st.markdown('<div class="page-title">Pool Chat</div>', unsafe_allow_html=True)
     st.caption("Chat with the rest of the pool — messages refresh every 15 seconds.")
 
