@@ -1980,7 +1980,7 @@ using_sheets = get_worksheet() is not None
 tournament_name = "Masters Tournament"
 status_str  = lb_data["status"] if lb_data else ""
 status_icon = {"In Progress": "🟢", "Final": "🏁", "Scheduled": "🕐"}.get(status_str, "")
-now_str     = datetime.now().strftime("%I:%M %p ET")
+now_str     = datetime.now(pytz.timezone("America/New_York")).strftime("%I:%M %p ET")
 
 # ── TOP NAV BAR — fixed white bar with real HTML text links ──────────────────
 submit_href = "?_a=1&view=submit"

@@ -8,7 +8,7 @@
 POOL_NAME = "Masters Pool 2026"
 
 # ── SCORING RULES ─────────────────────────────────────────────────────────────
-# Each participant picks 15 players (see TIERS below for how many per tier).
+# Each participant picks 14 players (see TIERS below for how many per tier).
 # Only the 8 BEST (lowest) scores among their picks count toward their total.
 # If fewer than 8 of their 15 picks make the cut, they are DISQUALIFIED.
 TOTAL_PICKS = 14
