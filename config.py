@@ -168,7 +168,7 @@ CHAT_SHEET_TAB  = "Chat"
 
 # ── TOURNAMENT DATES ──────────────────────────────────────────────────────────
 # Picks lock when the first round starts.
-FIRST_ROUND_START = "2026-04-10 07:30"   # Eastern Time — Masters Round 1 first tee time
+FIRST_ROUND_START = "2026-04-10 00:01"   # Eastern Time — set to midnight so lock is always active
 LOCK_PICKS_ON_START = True
 
 # ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
