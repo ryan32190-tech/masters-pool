@@ -16,6 +16,7 @@ Local dev:
 """
 
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import pandas as pd
 import gspread
@@ -1354,128 +1355,7 @@ def _score_html(val: str, score_int: int | None = None) -> str:
 
 
 def render_leaderboard_view(lb_data, lb_error):
-    # ── Masters-style scoreboard CSS ─────────────────────────────────────────
-    st.markdown("""
-    <style>
-    .masters-bg {
-        background: linear-gradient(180deg, #5b9bd5 0%, #7ab8e8 30%, #5aaa5a 68%, #2d7a2d 100%);
-        padding: 28px 12px 36px 12px;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-    }
-    .masters-board {
-        max-width: 860px;
-        margin: 0 auto;
-        background: #f2ede0;
-        border: 6px solid #2d5a27;
-        border-radius: 4px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.45);
-        overflow: hidden;
-    }
-    .masters-board-cap {
-        background: #f2ede0;
-        border-bottom: 3px solid #2d5a27;
-        text-align: center;
-        padding: 10px 0 6px 0;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 2rem;
-        font-weight: 900;
-        letter-spacing: 0.18em;
-        color: #1a1a1a;
-    }
-    .masters-round-badge {
-        display: inline-block;
-        background: #006747;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        padding: 2px 10px;
-        border-radius: 12px;
-        margin-left: 12px;
-        vertical-align: middle;
-        position: relative;
-        top: -3px;
-    }
-    .masters-table-wrap {
-        overflow-y: auto;
-        max-height: 480px;
-    }
-    .masters-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 0.88rem;
-    }
-    .masters-table thead th {
-        position: sticky;
-        top: 0;
-        background: #2d5a27;
-        color: #f2ede0;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.10em;
-        text-align: center;
-        padding: 7px 6px;
-        border-right: 1px solid #3d7a33;
-        white-space: nowrap;
-        z-index: 2;
-    }
-    .masters-table thead th.player-th {
-        text-align: left;
-        padding-left: 12px;
-    }
-    .masters-table tbody tr {
-        border-bottom: 1px solid #ccc8b8;
-    }
-    .masters-table tbody tr:nth-child(even) {
-        background: #eae5d4;
-    }
-    .masters-table tbody tr:hover {
-        background: #ddd8c4;
-    }
-    .masters-table td {
-        text-align: center;
-        padding: 7px 6px;
-        border-right: 1px solid #ccc8b8;
-        color: #1a1a1a;
-        white-space: nowrap;
-    }
-    .masters-table td.player-td {
-        text-align: left;
-        padding-left: 12px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        font-size: 0.85rem;
-        min-width: 160px;
-    }
-    .masters-table td.pos-td {
-        font-weight: 700;
-        color: #444;
-        font-size: 0.82rem;
-        min-width: 36px;
-    }
-    .masters-cut-divider td {
-        background: #2d5a27 !important;
-        color: #f2ede0 !important;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.10em;
-        text-align: center;
-        padding: 5px 6px;
-    }
-    .masters-footer {
-        background: #2d5a27;
-        color: #c8d8c0;
-        text-align: center;
-        font-size: 0.7rem;
-        padding: 6px;
-        letter-spacing: 0.06em;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Tournament Leaderboard</div>', unsafe_allow_html=True)
 
     if lb_error:
         st.warning(lb_error)
@@ -1486,14 +1366,14 @@ def render_leaderboard_view(lb_data, lb_error):
         st.info("🏌️ No scores yet — the tournament hasn't started.")
         return
 
-    lb        = lb_data["leaderboard"]
-    round_num = lb_data.get("round", 1)
+    lb         = lb_data["leaderboard"]
+    round_num  = lb_data.get("round", 1)
     status_str = lb_data.get("status", "")
 
     active = lb[lb["made_cut"]].copy()
     cut    = lb[~lb["made_cut"]].copy()
 
-    # Which round columns exist?
+    # Which round columns have data?
     round_cols = [r for r in ["R1", "R2", "R3", "R4"]
                   if r in lb.columns and lb[r].notna().any()]
 
@@ -1501,101 +1381,185 @@ def render_leaderboard_view(lb_data, lb_error):
     cut_line_html = ""
     if round_num >= 2:
         if lb_data.get("cut_score") is not None:
-            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">✂ Cut: {_fmt(lb_data["cut_score"])}</span>'
+            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">&#9986; Cut: {_fmt(lb_data["cut_score"])}</span>'
         elif not active.empty:
             worst = int(active["score_int"].max())
-            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">✂ Proj. Cut: {_fmt(worst)} or better</span>'
+            cut_line_html = f'<span style="color:#c8102e;font-weight:700;">&#9986; Proj. Cut: {_fmt(worst)} or better</span>'
 
-    # ── Build header row ──────────────────────────────────────────────────────
-    r_headers = "".join(f"<th>{r}</th>" for r in round_cols)
-    thead = f"""
-    <thead>
-      <tr>
-        <th>POS</th>
-        <th class="player-th">PLAYER</th>
-        <th>TOTAL</th>
-        <th>TODAY</th>
-        <th>THRU</th>
-        {r_headers}
-      </tr>
-    </thead>"""
+    # ── Build rows ────────────────────────────────────────────────────────────
+    r_headers = "".join(f'<th style="text-align:center;padding:8px 6px;background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;border-right:1px solid #3d7a33;white-space:nowrap;">{r}</th>' for r in round_cols)
 
-    def player_rows(df, grey=False):
-        rows_html = ""
-        for _, row in df.iterrows():
+    def score_cell(val, score_int=None):
+        if val in (None, "", "—", "-", "nan"):
+            return '<span style="color:#888;">—</span>'
+        try:
+            n = int(score_int) if score_int is not None else int(val)
+        except (ValueError, TypeError):
+            n = None
+        color = "#c8102e" if (n is not None and n < 0) else "#1a1a1a"
+        return f'<span style="color:{color};font-weight:700;">{val}</span>'
+
+    def build_rows(df, grey=False):
+        out = ""
+        for i, (_, row) in enumerate(df.iterrows()):
+            bg = "#eae5d4" if (i % 2 == 1) else "#f2ede0"
+            if grey:
+                bg = "#e0ddd0" if (i % 2 == 1) else "#e8e4d8"
             score_int = row.get("score_int", None)
             try:
                 score_int = int(score_int)
             except (ValueError, TypeError):
                 score_int = None
-
-            today_val = row.get("today", "—")
+            today_val = str(row.get("today", "—"))
             try:
-                today_int = int(today_val) if today_val not in ("—", "", None) else None
+                today_int = int(today_val)
             except (ValueError, TypeError):
                 today_int = None
-
             r_cells = ""
             for r in round_cols:
                 rv = row.get(r, "—")
                 try:
-                    rv_int = int(rv) if rv not in ("—", "", None) else None
+                    rv_int = int(rv)
                 except (ValueError, TypeError):
                     rv_int = None
-                r_cells += f"<td>{_score_html(str(rv) if rv not in ('—', '', None) else '—', rv_int)}</td>"
-
-            style = ' style="opacity:0.65;"' if grey else ""
-            rows_html += f"""
-            <tr{style}>
-              <td class="pos-td">{row.get("position","—")}</td>
-              <td class="player-td">{row.get("name","")}</td>
-              <td>{_score_html(str(row.get("score","—")), score_int)}</td>
-              <td>{_score_html(str(today_val), today_int)}</td>
-              <td>{row.get("thru","—")}</td>
+                rv_str = str(rv) if rv not in ("—", "", None) else "—"
+                r_cells += f'<td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(rv_str, rv_int)}</td>'
+            opacity = ' opacity:0.7;' if grey else ''
+            out += f"""<tr style="background:{bg};border-bottom:1px solid #ccc8b8;{opacity}">
+              <td style="text-align:center;padding:7px 8px;font-weight:700;color:#444;font-size:0.82rem;border-right:1px solid #ccc8b8;min-width:38px;">{row.get("position","—")}</td>
+              <td style="text-align:left;padding:7px 12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:0.85rem;border-right:1px solid #ccc8b8;min-width:170px;">{row.get("name","")}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(str(row.get("score","—")), score_int)}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(today_val, today_int)}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{row.get("thru","—")}</td>
               {r_cells}
             </tr>"""
-        return rows_html
+        return out
 
-    active_rows = player_rows(active)
+    active_rows = build_rows(active)
 
     cut_section = ""
     if not cut.empty:
-        n_cut_cols = 5 + len(round_cols)
+        n_cols = 5 + len(round_cols)
         cut_section = f"""
-        <tr class="masters-cut-divider">
-          <td colspan="{n_cut_cols}">✂&nbsp; MISSED CUT / WD / DQ ({len(cut)} players)</td>
+        <tr>
+          <td colspan="{n_cols}" style="background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;text-align:center;padding:6px;">
+            &#9986;&nbsp; MISSED CUT / WD / DQ &nbsp;({len(cut)} players)
+          </td>
         </tr>
-        {player_rows(cut, grey=True)}"""
+        {build_rows(cut, grey=True)}"""
 
-    refresh_note = f"Round {round_num} of 4  ·  refreshes every {REFRESH_INTERVAL_SECONDS}s  ·  via ESPN"
+    refresh_note = f"Round {round_num} of 4 &nbsp;·&nbsp; refreshes every {REFRESH_INTERVAL_SECONDS}s &nbsp;·&nbsp; data via ESPN"
     if status_str:
-        refresh_note = f"{status_str}  ·  {refresh_note}"
+        refresh_note = f"{status_str} &nbsp;·&nbsp; {refresh_note}"
 
-    cut_info_bar = f'<div style="text-align:center;padding:5px 0 2px;font-size:0.8rem;">{cut_line_html}</div>' if cut_line_html else ""
+    cut_bar = f'<div style="text-align:center;padding:5px 0 3px;font-size:0.82rem;background:#f2ede0;border-bottom:1px solid #ccc8b8;">{cut_line_html}</div>' if cut_line_html else ""
 
-    html = f"""
-    <div class="masters-bg">
-      <div class="masters-board">
-        <div class="masters-board-cap">
-          LEADERS
-          <span class="masters-round-badge">ROUND {round_num}</span>
-        </div>
-        {cut_info_bar}
-        <div class="masters-table-wrap">
-          <table class="masters-table">
-            {thead}
-            <tbody>
-              {active_rows}
-              {cut_section}
-            </tbody>
-          </table>
-        </div>
-        <div class="masters-footer">{refresh_note}</div>
-      </div>
-    </div>
-    """
+    # Sticky-header columns
+    th_style = "position:sticky;top:0;z-index:2;background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;padding:8px 6px;border-right:1px solid #3d7a33;white-space:nowrap;"
+    n_rows   = len(active) + len(cut)
+    # Height: header ~34px + rows ~34px each + cut divider + footer
+    tbl_height = min(34 + n_rows * 34 + (8 if cut.empty else 42), 480)
 
-    st.markdown(html, unsafe_allow_html=True)
+    full_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{
+    background: linear-gradient(180deg, #5b9bd5 0%, #7ab8e8 28%, #5aaa5a 65%, #2d7a2d 100%);
+    padding: 22px 10px 28px 10px;
+    font-family: Arial, Helvetica, sans-serif;
+  }}
+  .board {{
+    max-width: 820px;
+    margin: 0 auto;
+    background: #f2ede0;
+    border: 6px solid #2d5a27;
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }}
+  .cap {{
+    background: #f2ede0;
+    border-bottom: 3px solid #2d5a27;
+    text-align: center;
+    padding: 12px 0 8px 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.9rem;
+    font-weight: 900;
+    letter-spacing: .18em;
+    color: #1a1a1a;
+  }}
+  .badge {{
+    display: inline-block;
+    background: #006747;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 12px;
+    vertical-align: middle;
+    position: relative;
+    top: -3px;
+  }}
+  .scroll-wrap {{
+    overflow-y: auto;
+    max-height: 460px;
+  }}
+  table {{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }}
+  thead th {{
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }}
+  .footer {{
+    background: #2d5a27;
+    color: #c8d8c0;
+    text-align: center;
+    font-size: 0.68rem;
+    padding: 6px;
+    letter-spacing: .05em;
+  }}
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="cap">LEADERS <span class="badge">ROUND {round_num}</span></div>
+  {cut_bar}
+  <div class="scroll-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="{th_style}text-align:center;min-width:38px;">POS</th>
+          <th style="{th_style}text-align:left;padding-left:12px;min-width:170px;">PLAYER</th>
+          <th style="{th_style}text-align:center;">TOTAL</th>
+          <th style="{th_style}text-align:center;">TODAY</th>
+          <th style="{th_style}text-align:center;">THRU</th>
+          {r_headers}
+        </tr>
+      </thead>
+      <tbody>
+        {active_rows}
+        {cut_section}
+      </tbody>
+    </table>
+  </div>
+  <div class="footer">{refresh_note}</div>
+</div>
+</body>
+</html>"""
+
+    # height = background padding + board header + table content + footer
+    iframe_height = 22 + 28 + 58 + tbl_height + 30 + 60
+    components.html(full_html, height=iframe_height, scrolling=False)
 
 
 def render_prizes_view(picks_df, lb_data):
