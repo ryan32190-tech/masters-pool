@@ -17,6 +17,7 @@ Local dev:
 
 import streamlit as st
 import streamlit.components.v1 as components
+import re
 import requests
 import pandas as pd
 import gspread
@@ -809,9 +810,14 @@ def get_all_picks_flat(participant_row: pd.Series) -> list[str]:
 import unicodedata
 
 def _normalize(s: str) -> str:
-    """Lowercase, strip accents, remove punctuation for fuzzy matching."""
+    """Lowercase, strip accents, remove dots/hyphens, collapse spaces."""
+    # Handle special characters that NFD won't decompose
+    _CHAR_MAP = {"ø": "o", "Ø": "o", "æ": "ae", "Æ": "ae", "å": "a", "Å": "a"}
+    s = "".join(_CHAR_MAP.get(c, c) for c in s)
     s = unicodedata.normalize("NFD", s)
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = re.sub(r"[.\-]", " ", s)   # J.J. → J J,  Neergaard-Petersen → Neergaard Petersen
+    s = re.sub(r"\s+", " ", s)     # collapse multiple spaces
     return s.lower().strip()
 
 
