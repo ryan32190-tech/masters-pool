@@ -1770,7 +1770,7 @@ def render_submit_view(picks_df):
     )
 
     # ── Load existing picks to pre-fill form ──────────────────────────────────
-    with st.expander("👀 Already submitted? Load your picks to edit them"):
+    with st.expander("👀 Already submitted? Load your picks to edit them", expanded=True):
         if picks_df.empty:
             st.info("No submissions on file yet.")
         else:
