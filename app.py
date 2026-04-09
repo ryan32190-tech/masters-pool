@@ -1180,7 +1180,7 @@ def render_scottie_header():
     st.markdown(f"""
     <div style="display:flex; justify-content:center; margin: -8px 0 -18px 0;">
       <img src="data:image/jpeg;base64,{b64}"
-           style="height:105px; filter:drop-shadow(2px 4px 6px rgba(0,0,0,0.18));">
+           style="height:180px; mix-blend-mode:multiply;">
     </div>
     """, unsafe_allow_html=True)
 
