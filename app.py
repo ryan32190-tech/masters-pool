@@ -1592,21 +1592,11 @@ def render_prizes_view(picks_df, lb_data):
     current_round = lb_data.get("round", 1) if lb_data else 0
 
     participants = len(picks_df)
-    pot          = participants * BUY_IN if participants else 0
-
-    # Dynamic prize amounts as percentages of the total pot
-    PRIZE_PCT = {
-        "1st Round Leader": 0.10,
-        "2nd Round Leader": 0.10,
-        "3rd Round Leader": 0.10,
-        "Champion":         0.50,
-        "Runner Up":        0.20,
-    }
-    prize_amounts = {label: round(pot * pct) for label, pct in PRIZE_PCT.items()}
+    total_payout = sum(PRIZES.values())
 
     m1, m2 = st.columns(2)
     with m1: st.metric("Participants", participants)
-    with m2: st.metric("Total Pot", f"${pot:,}")
+    with m2: st.metric("Total Payout", f"${total_payout:,}")
 
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
@@ -1616,7 +1606,7 @@ def render_prizes_view(picks_df, lb_data):
         "3rd Round Leader": ("R3", 3),
     }
 
-    for label, amount in prize_amounts.items():
+    for label, amount in PRIZES.items():
         leader_str = ""
         if label in round_label_map and not picks_df.empty and not lb.empty:
             col_r, rnd = round_label_map[label]
@@ -1624,15 +1614,15 @@ def render_prizes_view(picks_df, lb_data):
                 ldr = get_round_leader(picks_df, lb, col_r)
                 if ldr:
                     leader_str = f"→ {ldr}"
-        elif label == "Champion" and not picks_df.empty and lb_data and lb_data["status"] == "Final":
-            stds = calculate_standings(picks_df, lb_data)
-            if stds and not stds[0]["dq"]:
-                leader_str = f"→ 🏆 {stds[0]['participant']} ({stds[0]['total_display']})"
-        elif label == "Runner Up" and not picks_df.empty and lb_data and lb_data["status"] == "Final":
+        elif label in ("Champion", "Runner Up", "3rd Overall") and not picks_df.empty and lb_data and lb_data.get("status") == "Final":
             stds = calculate_standings(picks_df, lb_data)
             active_s = [s for s in stds if not s["dq"]]
-            if len(active_s) >= 2:
+            if label == "Champion" and len(active_s) >= 1:
+                leader_str = f"→ 🏆 {active_s[0]['participant']} ({active_s[0]['total_display']})"
+            elif label == "Runner Up" and len(active_s) >= 2:
                 leader_str = f"→ {active_s[1]['participant']} ({active_s[1]['total_display']})"
+            elif label == "3rd Overall" and len(active_s) >= 3:
+                leader_str = f"→ {active_s[2]['participant']} ({active_s[2]['total_display']})"
 
         st.markdown(f"""
         <div class="prize-card">

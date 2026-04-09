@@ -139,11 +139,12 @@ TIERS = {
 BUY_IN = 100   # Per person (displayed for reference)
 
 PRIZES = {
-    "1st Round Leader":  200,
-    "2nd Round Leader":  200,
-    "3rd Round Leader":  300,
-    "Champion":         1000,
-    "Runner Up":         200,
+    "1st Round Leader": 200,
+    "2nd Round Leader": 200,
+    "3rd Round Leader": 200,
+    "Champion":        1500,
+    "Runner Up":        400,
+    "3rd Overall":      200,
 }
 
 # ── LEADERBOARD API ───────────────────────────────────────────────────────────
