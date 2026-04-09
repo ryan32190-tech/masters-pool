@@ -690,13 +690,16 @@ def fetch_leaderboard():
             )
             # ESPN only updates score.displayValue after a round is complete.
             # For in-progress rounds, the live scoreToPar is in statistics[].
-            if total_display in ("E", "--", "", None):
+            if total_display in ("E", "—", "--", "", None):
                 for stat in player.get("statistics", []):
                     if stat.get("name") == "scoreToPar":
                         live = stat.get("displayValue", "E")
-                        if live not in ("E", "--", "", None):
+                        if live not in ("—", "--", "", None):
                             total_display = live
                         break
+            # Players who haven't started show "—" from ESPN — normalise to "E"
+            if total_display in ("—", "--", None, ""):
+                total_display = "E"
             total_int = _parse_score(total_display)
 
             p_status = player.get("status", {})
@@ -1034,7 +1037,9 @@ def calculate_standings(picks_df: pd.DataFrame, lb_data: dict | None) -> list:
 
     results = []
     if lb_data and not lb_data["leaderboard"].empty:
-        score_map = build_score_map(lb_data["leaderboard"], lb_data.get("cut_score"))
+        # Only project cut from Round 2 onwards — Round 1 has no cut yet
+        cut_score_for_map = lb_data.get("cut_score") if lb_data.get("round", 1) >= 2 else None
+        score_map = build_score_map(lb_data["leaderboard"], cut_score_for_map)
     else:
         score_map = {}
 
