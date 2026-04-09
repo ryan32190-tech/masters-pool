@@ -1071,16 +1071,7 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -
 
 # ── PICKS LOCK ────────────────────────────────────────────────────────────────
 def picks_are_locked() -> bool:
-    if not LOCK_PICKS_ON_START:
-        return False
-    try:
-        eastern = pytz.timezone("America/New_York")
-        cutoff = eastern.localize(
-            datetime.strptime(FIRST_ROUND_START, "%Y-%m-%d %H:%M")
-        )
-        return datetime.now(tz=pytz.utc) >= cutoff.astimezone(pytz.utc)
-    except Exception:
-        return False
+    return bool(LOCK_PICKS_ON_START)
 
 
 # ── ODDS API ─────────────────────────────────────────────────────────────────
@@ -1402,6 +1393,10 @@ def render_leaderboard_view(lb_data, lb_error):
 
     active = lb[lb["made_cut"]].copy()
     cut    = lb[~lb["made_cut"]].copy()
+
+    # Sort active: started players (thru != "—") best score first, not-started last
+    active["_started"] = active["thru"].apply(lambda t: 0 if str(t) not in ("—", "", "0") else 1)
+    active = active.sort_values(["_started", "score_int"]).drop(columns=["_started"])
 
     # Which round columns have data?
     round_cols = [r for r in ["R1", "R2", "R3", "R4"]
