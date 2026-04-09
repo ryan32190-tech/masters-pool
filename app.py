@@ -1657,7 +1657,8 @@ def render_prizes_view(picks_df, lb_data):
         leader_str = ""
         if label in round_label_map and not picks_df.empty and not lb.empty:
             col_r, rnd = round_label_map[label]
-            if current_round >= rnd:
+            # Only show winner once that round is fully complete (round has advanced past it)
+            if current_round > rnd:
                 ldr = get_round_leader(picks_df, lb, col_r)
                 if ldr:
                     leader_str = f"→ {ldr}"

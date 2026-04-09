@@ -143,7 +143,7 @@ PRIZES = {
     "2nd Round Leader": 200,
     "3rd Round Leader": 200,
     "Champion":        1500,
-    "Runner Up":        400,
+    "Runner Up":        500,
     "3rd Overall":      200,
 }
 
