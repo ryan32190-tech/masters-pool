@@ -688,6 +688,15 @@ def fetch_leaderboard():
                 score_obj.get("displayValue", "E")
                 if isinstance(score_obj, dict) else str(score_obj)
             )
+            # ESPN only updates score.displayValue after a round is complete.
+            # For in-progress rounds, the live scoreToPar is in statistics[].
+            if total_display in ("E", "--", "", None):
+                for stat in player.get("statistics", []):
+                    if stat.get("name") == "scoreToPar":
+                        live = stat.get("displayValue", "E")
+                        if live not in ("E", "--", "", None):
+                            total_display = live
+                        break
             total_int = _parse_score(total_display)
 
             p_status = player.get("status", {})
@@ -1242,8 +1251,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
 
     medals = {1: "🥇", 2: "🥈", 3: "🥉"}
     tournament_started = picks_are_locked()
-    round_num_s = lb_data.get("round", 1) if lb_data else 1
-    cut_col_label = "Active Picks" if round_num_s <= 1 else "Making Cut"
+    cut_col_label = "Making Cut"
 
     # Fetch odds for Win Probability (only needed once tournament has started)
     odds_map = None
