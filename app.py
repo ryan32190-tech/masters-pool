@@ -1320,50 +1320,71 @@ def render_standings_view(picks_df, lb_data, lb_error):
             return f"{parts[0][0]}. {' '.join(parts[1:])}"
         return full_name
 
+    # Work out the widest abbreviated name in the entire field so every
+    # name column is exactly that wide — no truncation.
+    all_names = [abbrev(px["name"]) for e in standings for px in e["per_player"]]
+    max_name_chars = max((len(n) for n in all_names), default=14)
+    name_w  = max(130, max_name_chars * 9)   # ~9px per char
+    score_w = 52
+
+    cut_round = lb_data.get("round", 1) if lb_data else 1
+    cut_label = "Proj. Making Cut" if (cut_round <= 2 and lb_data and lb_data.get("cut_score") is not None) else "Making Cut"
+
+    # Build column keys: one name col + one score col per participant
+    # Score col key must be unique — use a private prefix
+    def score_key(i): return f"\u200b{i}"   # zero-width-space + index = invisible header
+
     table_rows = []
     for slot_idx, label in enumerate(pick_labels):
         row = {"": label}
-        for entry in standings:
+        for i, entry in enumerate(standings):
             hdr = col_header(entry)
             per = entry["per_player"]
             if slot_idx < len(per):
                 px = per[slot_idx]
                 short = abbrev(px["name"])
                 if not px.get("found", True):
-                    cell = f"❓ {short}"
+                    name_cell  = f"❓ {short}"
+                    sc         = ""
                 elif not px["made_cut"]:
-                    cell = f"✂️ {short} MC"
+                    name_cell  = f"✂️ {short}"
+                    sc         = "MC"
                 elif px["counted"]:
-                    cell = f"✅ {short} {px['score_display']}"
+                    name_cell  = f"✅ {short}"
+                    sc         = px["score_display"]
                 else:
-                    cell = f"➖ {short} {px['score_display']}"
+                    name_cell  = f"➖ {short}"
+                    sc         = px["score_display"]
             else:
-                cell = ""
-            row[hdr] = cell
+                name_cell = ""
+                sc        = ""
+            row[hdr]          = name_cell
+            row[score_key(i)] = sc
         table_rows.append(row)
 
-    cut_round = lb_data.get("round", 1) if lb_data else 1
-    cut_label = "Proj. Making Cut" if (cut_round <= 2 and lb_data and lb_data.get("cut_score") is not None) else "Making Cut"
+    # Summary rows
     totals  = {"": "TOTAL"}
     cut_row = {"": cut_label}
-    for entry in standings:
+    for i, entry in enumerate(standings):
         hdr = col_header(entry)
-        totals[hdr]  = entry["total_display"] if not entry["dq"] else "DQ"
-        cut_row[hdr] = f"{entry['makers']}/{TOTAL_PICKS}"
+        totals[hdr]           = ""
+        totals[score_key(i)]  = entry["total_display"] if not entry["dq"] else "DQ"
+        cut_row[hdr]          = ""
+        cut_row[score_key(i)] = f"{entry['makers']}/{TOTAL_PICKS}"
     table_rows.append(totals)
     table_rows.append(cut_row)
 
     breakdown_df = pd.DataFrame(table_rows)
-    n_participants = len(standings)
-    tier_w = 100
-    part_w = max(110, min(150, (1800 - tier_w) // max(n_participants, 1)))
-    col_cfg = {"": st.column_config.TextColumn("", width=tier_w)}
-    for c in breakdown_df.columns:
-        if c != "":
-            col_cfg[c] = st.column_config.TextColumn(c, width=part_w)
+
+    # Column config
+    col_cfg = {"": st.column_config.TextColumn("", width=95)}
+    for i, entry in enumerate(standings):
+        hdr = col_header(entry)
+        col_cfg[hdr]          = st.column_config.TextColumn(hdr,          width=name_w)
+        col_cfg[score_key(i)] = st.column_config.TextColumn(" ",          width=score_w)
     n_rows = len(breakdown_df)
 
-    # Style the last two rows (TOTAL + Making Cut) as Masters green / white text
+    # Style the last two rows green
     def _style_summary(df):
         styles = pd.DataFrame("", index=df.index, columns=df.columns)
         green = "background-color: #006747; color: #ffffff; font-weight: 600;"
