@@ -1189,7 +1189,13 @@ def render_standings_view(picks_df, lb_data, lb_error):
     st.markdown('<div class="page-title">Pool Standings</div>', unsafe_allow_html=True)
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
     if PSA_MESSAGE:
-        st.info(PSA_MESSAGE)
+        st.markdown(f"""
+        <div style="background:#f0f7f4; border-left:4px solid #006747;
+                    padding:10px 16px; border-radius:4px; margin-bottom:0.5rem;
+                    color:#1a1a1a; font-size:0.95rem;">
+            {PSA_MESSAGE}
+        </div>
+        """, unsafe_allow_html=True)
 
     # ── Cut line info bar — only show Round 2 onwards ────────────────────────
     if picks_are_locked() and lb_data and not lb_data["leaderboard"].empty:

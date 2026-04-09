@@ -173,4 +173,4 @@ LOCK_PICKS_ON_START = True
 
 # ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
 # Displayed at the top of the Pool Standings page. Set to "" to hide it.
-PSA_MESSAGE = "Hey good luck everybody! 🍀"
+PSA_MESSAGE = "The prize pool is set. Here we go."
