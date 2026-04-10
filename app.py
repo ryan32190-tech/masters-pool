@@ -709,11 +709,21 @@ def fetch_leaderboard():
                 thru = "—"
             status_name = p_status.get("type", {}).get("name", "").lower()
 
-            made_cut = "cut" not in status_name and "wd" not in status_name and "dq" not in status_name
+            # Use exact status name matching to avoid false positives from
+            # substrings like "active-cut" (projected-cut zone) tagging
+            # in-play leaders as having missed the cut.
+            _CUT_STATUSES = {"cut", "tourn-cut", "mc", "missed-cut", "eliminated"}
+            _WD_STATUSES  = {"wd", "withdrew", "withdrawal", "injury-wd"}
+            _DQ_STATUSES  = {"dq", "disqualified", "disq"}
+            made_cut = (
+                status_name not in _CUT_STATUSES
+                and status_name not in _WD_STATUSES
+                and status_name not in _DQ_STATUSES
+            )
             status_label = (
-                "WD" if "wd" in status_name
-                else "DQ" if "dq" in status_name
-                else "CUT" if "cut" in status_name
+                "WD"  if status_name in _WD_STATUSES
+                else "DQ"  if status_name in _DQ_STATUSES
+                else "CUT" if status_name in _CUT_STATUSES
                 else ""
             )
 
@@ -784,10 +794,12 @@ def _extract_today(player: dict, thru: str = "—") -> str:
     # If player hasn't teed off yet, today's score is always —
     if thru in ("—", "", "0"):
         return "—"
-    # Only use the dedicated "today" statistic — linescores contain raw stroke
-    # counts (e.g. 72), not score-to-par, so they must not be used here.
+    # ESPN exposes today's round score as "today" stat; "scoreToPar" is the
+    # live running score (same as today in R1, total in R2+). Try "today" first,
+    # then fall back to "scoreToPar". Never use linescores — those values are
+    # raw stroke counts (e.g. 72), not score-to-par.
     for stat in player.get("statistics", []):
-        if stat.get("name") == "today":
+        if stat.get("name") in ("today", "scoreToPar"):
             val = stat.get("displayValue", "—")
             if val not in ("—", "--", "", None):
                 return val
