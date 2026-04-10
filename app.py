@@ -1526,9 +1526,9 @@ def render_leaderboard_view(lb_data, lb_error):
 
     # Sticky-header columns
     th_style = "position:sticky;top:0;z-index:2;background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;padding:8px 6px;border-right:1px solid #3d7a33;white-space:nowrap;"
-    n_rows   = len(active) + len(cut)
-    # Height: header ~34px + rows ~34px each + cut divider + footer
-    tbl_height = min(34 + n_rows * 34 + (8 if cut.empty else 42), 480)
+    n_rows     = len(active) + len(cut)
+    # Full height — no cap, show every player without internal scrolling
+    tbl_height = 34 + n_rows * 34 + (0 if cut.empty else 42)
 
     full_html = f"""<!DOCTYPE html>
 <html>
@@ -1577,8 +1577,7 @@ def render_leaderboard_view(lb_data, lb_error):
     top: -3px;
   }}
   .scroll-wrap {{
-    overflow-y: auto;
-    max-height: 460px;
+    overflow-y: visible;
   }}
   table {{
     width: 100%;
