@@ -727,8 +727,8 @@ def fetch_leaderboard():
                     except (ValueError, TypeError):
                         pass
 
-            # Today's score
-            today_display = _extract_today(player)
+            # Today's score — pass thru so not-started players cleanly show —
+            today_display = _extract_today(player, thru)
 
             rows.append({
                 "position":   position,
@@ -779,18 +779,18 @@ def fetch_leaderboard():
         return None, f"Parse error: {e}"
 
 
-def _extract_today(player: dict) -> str:
-    linescores = player.get("linescores", [])
-    if linescores:
-        val = linescores[-1].get("value")
-        if val is not None:
-            try:
-                return _fmt(int(val))
-            except (ValueError, TypeError):
-                pass
+def _extract_today(player: dict, thru: str = "—") -> str:
+    """Today's round score-to-par. Returns '—' when player hasn't started."""
+    # If player hasn't teed off yet, today's score is always —
+    if thru in ("—", "", "0"):
+        return "—"
+    # Only use the dedicated "today" statistic — linescores contain raw stroke
+    # counts (e.g. 72), not score-to-par, so they must not be used here.
     for stat in player.get("statistics", []):
-        if stat.get("name") in ("scoreToPar", "today"):
-            return stat.get("displayValue", "—")
+        if stat.get("name") == "today":
+            val = stat.get("displayValue", "—")
+            if val not in ("—", "--", "", None):
+                return val
     return "—"
 
 
