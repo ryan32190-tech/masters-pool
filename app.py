@@ -683,21 +683,24 @@ def fetch_leaderboard():
         for player in comp.get("competitors", []):
             name = player.get("athlete", {}).get("displayName", "Unknown")
 
-            score_obj = player.get("score", {})
-            total_display = (
-                score_obj.get("displayValue", "E")
-                if isinstance(score_obj, dict) else str(score_obj)
-            )
-            # ESPN only updates score.displayValue after a round is complete.
-            # For in-progress rounds, the live scoreToPar is in statistics[].
-            if total_display in ("E", "—", "--", "", None):
-                for stat in player.get("statistics", []):
-                    if stat.get("name") == "scoreToPar":
-                        live = stat.get("displayValue", "E")
-                        if live not in ("—", "--", "", None):
-                            total_display = live
-                        break
-            # Players who haven't started show "—" from ESPN — normalise to "E"
+            # Always prefer statistics[].scoreToPar — it's the live running score.
+            # score.displayValue only updates after a round is fully complete, so
+            # it lags badly mid-round (e.g. showing -2 while player is really -5).
+            total_display = None
+            for stat in player.get("statistics", []):
+                if stat.get("name") == "scoreToPar":
+                    val = stat.get("displayValue", "")
+                    if val not in ("—", "--", "", None):
+                        total_display = val
+                    break
+            # Fall back to score.displayValue if no live stat found
+            if not total_display:
+                score_obj = player.get("score", {})
+                total_display = (
+                    score_obj.get("displayValue", "E")
+                    if isinstance(score_obj, dict) else str(score_obj)
+                )
+            # Normalise blank / dash to "E"
             if total_display in ("—", "--", None, ""):
                 total_display = "E"
             total_int = _parse_score(total_display)
