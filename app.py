@@ -1270,11 +1270,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
     tournament_started = picks_are_locked()
     cut_col_label = "Making Cut"
 
-    # Fetch odds for Win Probability (only needed once tournament has started)
-    odds_map = None
-    if tournament_started:
-        odds_map, _ = fetch_odds()
-        standings = calculate_win_probability(standings, odds_map)
+    # (Win Probability removed — odds API disabled)
 
     # Summary table
     rows = []
@@ -1283,12 +1279,10 @@ def render_standings_view(picks_df, lb_data, lb_error):
         if tournament_started:
             if entry["dq"]:
                 rows.append({"Place": "❌ DQ", "Participant": entry["participant"],
-                             "Score": "DQ", cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}",
-                             "Win Probability": "—"})
+                             "Score": "DQ", cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}"})
             else:
                 rows.append({"Place": medals.get(place, str(place)), "Participant": entry["participant"],
-                             "Score": entry["total_display"], cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}",
-                             "Win Probability": entry.get("win_prob", "—")})
+                             "Score": entry["total_display"], cut_col_label: f"{entry['makers']}/{TOTAL_PICKS}"})
                 place += 1
         else:
             rows.append({"Place": "—", "Participant": entry["participant"],
@@ -1695,82 +1689,20 @@ def render_prizes_view(picks_df, lb_data):
 
 
 def render_odds_view():
-    st.markdown('<div class="page-title">Player Odds</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Player Tiers</div>', unsafe_allow_html=True)
+    st.caption("Players grouped by draft tier — each participant picks from every tier.")
 
-    odds_map, odds_error = fetch_odds()
-
-    if odds_error:
-        if "ODDS_API_KEY" in odds_error:
-            st.warning(odds_error)
-        else:
-            st.warning(f"⚠️ Odds unavailable: {odds_error}")
-        return
-
-    # Build a flat table: Tier | Player | Odds
-    rows = []
     for tier, players in TIERS.items():
-        for player in players:
-            key  = _normalize(player)
-            info = odds_map.get(key)
-            if info is None:
-                # Try last-name-only match
-                last = key.split()[-1] if key.split() else key
-                info = odds_map.get(last)
-            odds_display = info["display"] if info else "—"
-            prob         = _implied_prob(info["american"]) if info else None
-            rows.append({
-                "Tier":   tier,
-                "Player": player,
-                "Odds":   odds_display,
-                "_prob":  prob if prob else 0.0,
-            })
-
-    df = pd.DataFrame(rows)
-
-    # ── Display by tier ───────────────────────────────────────────────────────
-    book_name = ""
-    if odds_map:
-        sample = next(iter(odds_map.values()))
-        book_name = sample.get("book", "")
-
-    caption = f"Outright winner odds · {book_name}" if book_name else "Outright winner odds"
-    st.caption(caption)
-
-    missing = [r["Player"] for _, r in df.iterrows() if r["Odds"] == "—"]
-
-    for tier in TIERS.keys():
-        tier_df = df[df["Tier"] == tier].copy()
-        if tier_df.empty:
-            continue
-
-        # Sort favorites first (highest implied prob)
-        tier_df = tier_df.sort_values("_prob", ascending=False)
-
         st.markdown(f"**{tier}**")
-        display_df = tier_df[["Player", "Odds"]].reset_index(drop=True)
+        df = pd.DataFrame({"Player": players})
         st.dataframe(
-            display_df,
+            df,
             use_container_width=True,
             hide_index=True,
-            column_config={
-                "Player": st.column_config.TextColumn("Player", width=220),
-                "Odds":   st.column_config.TextColumn("Odds (American)", width=130),
-            },
-            height=35 * len(display_df) + 38,
+            column_config={"Player": st.column_config.TextColumn("Player", width=260)},
+            height=35 * len(df) + 38,
         )
         st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
-
-    # Debug expander to identify name mismatches
-    if missing:
-        with st.expander(f"⚠️ {len(missing)} player(s) with no odds — click to diagnose"):
-            st.markdown("**Players in your tiers with no matching odds:**")
-            for p in missing:
-                st.markdown(f"- {p}")
-            st.markdown("---")
-            st.markdown("**All names returned by the API:**")
-            api_names = sorted(info["name"] for info in odds_map.values())
-            for n in api_names:
-                st.markdown(f"- {n}")
 
 
 def _render_my_picks(name: str, pin: str, picks_df: pd.DataFrame):
@@ -2043,7 +1975,7 @@ st.markdown(f"""
                 <a href="?_a=1&view=standings"    class="dropdown-item" target="_self">Pool Standings</a>
                 <a href="?_a=1&view=leaderboard" class="dropdown-item" target="_self">Tournament Leaderboard</a>
                 <a href="?_a=1&view=prizes"      class="dropdown-item" target="_self">Prize Pool</a>
-                <a href="?_a=1&view=odds"        class="dropdown-item" target="_self">Player Odds</a>
+                <a href="?_a=1&view=odds"        class="dropdown-item" target="_self">Player Tiers</a>
                 <a href="?_a=1&view=distribution" class="dropdown-item" target="_self">Pick Distribution</a>
                 <a href="?_a=1&view=chat"        class="dropdown-item" target="_self">💬 Pool Chat</a>
             </div>
