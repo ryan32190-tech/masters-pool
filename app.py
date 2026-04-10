@@ -1348,7 +1348,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
                     sc         = ""
                 elif not px["made_cut"]:
                     name_cell  = f"✂️ {short}"
-                    sc         = "MC"
+                    sc         = px["score_display"]
                 elif px["counted"]:
                     name_cell  = f"✅ {short}"
                     sc         = px["score_display"]
