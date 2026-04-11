@@ -712,21 +712,11 @@ def fetch_leaderboard():
                 thru = "—"
             status_name = p_status.get("type", {}).get("name", "").lower()
 
-            # Use exact status name matching to avoid false positives from
-            # substrings like "active-cut" (projected-cut zone) tagging
-            # in-play leaders as having missed the cut.
-            _CUT_STATUSES = {"cut", "tourn-cut", "mc", "missed-cut", "eliminated"}
-            _WD_STATUSES  = {"wd", "withdrew", "withdrawal", "injury-wd"}
-            _DQ_STATUSES  = {"dq", "disqualified", "disq"}
-            made_cut = (
-                status_name not in _CUT_STATUSES
-                and status_name not in _WD_STATUSES
-                and status_name not in _DQ_STATUSES
-            )
+            made_cut = "cut" not in status_name and "wd" not in status_name and "dq" not in status_name
             status_label = (
-                "WD"  if status_name in _WD_STATUSES
-                else "DQ"  if status_name in _DQ_STATUSES
-                else "CUT" if status_name in _CUT_STATUSES
+                "WD"  if "wd"  in status_name
+                else "DQ"  if "dq"  in status_name
+                else "CUT" if "cut" in status_name
                 else ""
             )
 
