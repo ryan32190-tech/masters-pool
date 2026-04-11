@@ -1052,8 +1052,9 @@ def calculate_standings(picks_df: pd.DataFrame, lb_data: dict | None) -> list:
 
     results = []
     if lb_data and not lb_data["leaderboard"].empty:
-        # Only project cut from Round 2 onwards — Round 1 has no cut yet
-        cut_score_for_map = lb_data.get("cut_score") if lb_data.get("round", 1) >= 2 else None
+        # Only project cut during Round 2 — Round 1 has no cut yet, and Round 3+
+        # the cut is already official in ESPN's made_cut field so don't override it.
+        cut_score_for_map = lb_data.get("cut_score") if lb_data.get("round", 1) == 2 else None
         score_map = build_score_map(lb_data["leaderboard"], cut_score_for_map)
     else:
         score_map = {}
