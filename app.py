@@ -1073,8 +1073,15 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -
     round_map = {}
     for _, row in lb.iterrows():
         val = row.get(round_col)
-        if val is not None:
-            round_map[row["name"].lower()] = int(val)
+        try:
+            if val is not None and not pd.isna(val):
+                key = _normalize(str(row["name"]))
+                round_map[key] = int(val)
+                # also store last-name-only key for fuzzy matching
+                last = key.split()[-1] if key.split() else key
+                round_map.setdefault(last, int(val))
+        except (ValueError, TypeError):
+            pass
 
     if not round_map:
         return None
@@ -1084,8 +1091,11 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -
         picks = get_all_picks_flat(row)
         scores = []
         for p in picks:
-            key = p.strip().lower()
+            key = _normalize(p)
             s = round_map.get(key)
+            if s is None:
+                last = key.split()[-1] if key.split() else key
+                s = round_map.get(last)
             if s is not None:
                 scores.append(s)
         if len(scores) >= SCORING_PICKS:
