@@ -720,15 +720,27 @@ def fetch_leaderboard():
                 else ""
             )
 
-            # Per-round scores from linescores
+            # Per-round scores from linescores.
+            # ESPN stores raw stroke counts in .value (e.g. 68, 72).
+            # We prefer .displayValue which is the score-to-par string ("E","-4","+2").
+            # If only raw strokes are available, convert: score-to-par = strokes - 72 (Augusta par).
             round_scores = {}
             for i, ls in enumerate(player.get("linescores", []), 1):
-                val = ls.get("value")
-                if val is not None:
+                dv = str(ls.get("displayValue", "")).strip()
+                if dv and dv not in ("—", "--", "", "null"):
                     try:
-                        round_scores[f"R{i}"] = int(val)
-                    except (ValueError, TypeError):
+                        round_scores[f"R{i}"] = _parse_score(dv)
+                        continue
+                    except Exception:
                         pass
+                val = ls.get("value")
+                try:
+                    if val is not None and not pd.isna(val):
+                        v = int(float(val))
+                        # Raw strokes are always 50+; score-to-par is rarely outside -15..+20
+                        round_scores[f"R{i}"] = (v - 72) if v > 20 else v
+                except (ValueError, TypeError):
+                    pass
 
             # Today's score — pass thru so not-started players cleanly show —
             today_display = _extract_today(player, thru)
@@ -1103,6 +1115,10 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -
             bests.append((row["Name"], sum(best8)))
 
     if not bests:
+        return None
+    # Require at least half the pool to have valid scores for this round —
+    # prevents a premature result when only a few picks have teed off.
+    if len(bests) < max(2, len(picks_df) // 2):
         return None
     bests.sort(key=lambda x: x[1])
     return f"{bests[0][0]} ({_fmt(bests[0][1])})"
