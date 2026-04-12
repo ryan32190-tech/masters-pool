@@ -1073,29 +1073,39 @@ def calculate_standings(picks_df: pd.DataFrame, lb_data: dict | None) -> list:
 
 
 # ── ROUND LEADERS (for prize display) ─────────────────────────────────────────
-def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -> str | None:
+def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, through_round: int) -> str | None:
     """
-    Compute standings using a specific round column (R1, R2, R3) instead of
-    total. Used to determine per-round prize leaders.
-    Only works if ESPN returned per-round data.
+    Find the pool leader as of the END of `through_round` (1, 2, or 3).
+    Uses CUMULATIVE score through that round — i.e. sum of R1..RN per player —
+    which mirrors the live pool standings at the close of that round.
     """
-    if round_col not in lb.columns:
+    round_cols = [f"R{i}" for i in range(1, through_round + 1)]
+    available = [c for c in round_cols if c in lb.columns]
+    if not available:
         return None
 
-    round_map = {}
+    # Build cumulative score map: player_name → sum of R1..RN
+    cumulative_map: dict[str, int] = {}
     for _, row in lb.iterrows():
-        val = row.get(round_col)
-        try:
-            if val is not None and not pd.isna(val):
-                key = _normalize(str(row["name"]))
-                round_map[key] = int(val)
-                # also store last-name-only key for fuzzy matching
-                last = key.split()[-1] if key.split() else key
-                round_map.setdefault(last, int(val))
-        except (ValueError, TypeError):
-            pass
+        total = 0
+        valid = True
+        for col in available:
+            val = row.get(col)
+            try:
+                if val is None or pd.isna(val):
+                    valid = False
+                    break
+                total += int(val)
+            except (ValueError, TypeError):
+                valid = False
+                break
+        if valid:
+            key = _normalize(str(row["name"]))
+            cumulative_map[key] = total
+            last = key.split()[-1] if key.split() else key
+            cumulative_map.setdefault(last, total)
 
-    if not round_map:
+    if not cumulative_map:
         return None
 
     bests = []
@@ -1104,20 +1114,20 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, round_col: str) -
         scores = []
         for p in picks:
             key = _normalize(p)
-            s = round_map.get(key)
+            s = cumulative_map.get(key)
             if s is None:
                 last = key.split()[-1] if key.split() else key
-                s = round_map.get(last)
+                s = cumulative_map.get(last)
             if s is not None:
                 scores.append(s)
         if len(scores) >= SCORING_PICKS:
-            best8 = sorted(scores)[:SCORING_PICKS]
-            bests.append((row["Name"], sum(best8)))
+            best_n = sorted(scores)[:SCORING_PICKS]
+            bests.append((row["Name"], sum(best_n)))
 
     if not bests:
         return None
-    # Require at least half the pool to have valid scores for this round —
-    # prevents a premature result when only a few picks have teed off.
+    # Require at least half the pool to have valid data — guards against
+    # showing a premature leader when the round isn't fully complete yet.
     if len(bests) < max(2, len(picks_df) // 2):
         return None
     bests.sort(key=lambda x: x[1])
@@ -1673,18 +1683,18 @@ def render_prizes_view(picks_df, lb_data):
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
     round_label_map = {
-        "1st Round Leader": ("R1", 1),
-        "2nd Round Leader": ("R2", 2),
-        "3rd Round Leader": ("R3", 3),
+        "1st Round Leader": 1,
+        "2nd Round Leader": 2,
+        "3rd Round Leader": 3,
     }
 
     for label, amount in PRIZES.items():
         leader_str = ""
         if label in round_label_map and not picks_df.empty and not lb.empty:
-            col_r, rnd = round_label_map[label]
+            rnd = round_label_map[label]
             # Only show winner once that round is fully complete (round has advanced past it)
             if current_round > rnd:
-                ldr = get_round_leader(picks_df, lb, col_r)
+                ldr = get_round_leader(picks_df, lb, rnd)
                 if ldr:
                     leader_str = f"→ {ldr}"
         elif label in ("Champion", "Runner Up", "3rd Overall") and not picks_df.empty and lb_data and lb_data.get("status") == "Final":
