@@ -1,5 +1,5 @@
 """
-Masters Pool — Streamlit App
+US Open Pool — Streamlit App
 ────────────────────────────
 Live scoring pool app. Pulls leaderboard from ESPN, reads picks from Google
 Sheets, and calculates standings using top-8-of-15 scoring with real cut line.
@@ -36,7 +36,7 @@ from config import (
 # ── PAGE CONFIG ───────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title=POOL_NAME,
-    page_icon="https://www.masters.com/favicon.ico",
+    page_icon="https://www.usopen.com/favicon.ico",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -90,7 +90,7 @@ header[data-testid="stHeader"] { display: none !important; }
 /* ── Headers ── */
 h1 {
     font-family: 'Playfair Display', serif !important;
-    color: #006747 !important;
+    color: #002868 !important;
     font-size: 2.2rem !important;
     letter-spacing: 0.02em !important;
 }
@@ -101,7 +101,7 @@ h2, h3 {
 
 /* ── Tabs ── */
 .stTabs [data-baseweb="tab-list"] {
-    background-color: #006747 !important;
+    background-color: #002868 !important;
     border-radius: 6px 6px 0 0 !important;
     gap: 0 !important;
     padding: 0 !important;
@@ -135,7 +135,7 @@ h2, h3 {
 
 /* ── Buttons ── */
 .stButton > button {
-    background-color: #006747 !important;
+    background-color: #002868 !important;
     color: #fff !important;
     border: none !important;
     font-family: 'Source Sans 3', sans-serif !important;
@@ -200,7 +200,7 @@ div[role="radiogroup"] p {
     overflow: hidden !important;
 }
 [data-testid="stDataFrame"] thead tr th {
-    background-color: #006747 !important;
+    background-color: #002868 !important;
     color: #fff !important;
     font-family: 'Source Sans 3', sans-serif !important;
     font-weight: 600 !important;
@@ -221,7 +221,7 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
 
 /* ── Alerts / info boxes ── */
 .stAlert { border-radius: 4px !important; }
-[data-baseweb="notification"] { border-left: 4px solid #006747 !important; }
+[data-baseweb="notification"] { border-left: 4px solid #002868 !important; }
 
 /* ── Password screen ── */
 .stTextInput label { color: #1a3a2a !important; font-weight: 600 !important; }
@@ -243,7 +243,7 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
     max-width: 85%;
 }
 .chat-bubble-name {
-    font-weight: 700; color: #006747; font-size: 0.85rem;
+    font-weight: 700; color: #002868; font-size: 0.85rem;
 }
 .chat-bubble-time {
     font-size: 0.75rem; color: #999; margin-left: 0.5rem;
@@ -257,7 +257,7 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
 .streamlit-expanderHeader,
 [data-testid="stExpander"] summary,
 [data-testid="stExpander"] > div:first-child {
-    background-color: #006747 !important;
+    background-color: #002868 !important;
     color: white !important;
     border-radius: 4px !important;
     font-family: 'Source Sans 3', sans-serif !important;
@@ -322,8 +322,8 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
     transition: color 0.15s, border-color 0.15s;
 }
 .nav-link:hover {
-    color: #006747 !important;
-    border-bottom: 2px solid #006747;
+    color: #002868 !important;
+    border-bottom: 2px solid #002868;
     text-decoration: none !important;
 }
 .topnav-center {
@@ -358,7 +358,7 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
     top: 100%;
     left: 0;
     min-width: 230px;
-    background: linear-gradient(160deg, #004d34 0%, #006747 100%);
+    background: linear-gradient(160deg, #004d34 0%, #002868 100%);
     border-top: 3px solid #c9a84c;
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     z-index: 10000;
@@ -390,7 +390,7 @@ hr { border-color: #c9a84c88 !important; margin: 1rem 0 !important; }
 .page-title {
     font-family: 'Playfair Display', serif;
     font-size: 1.8rem;
-    color: #006747;
+    color: #002868;
     border-bottom: 3px solid #c9a84c;
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem;
@@ -427,10 +427,10 @@ def require_auth():
     st.markdown(f"""
     <div style="text-align:center; padding: 3rem 0 1rem 0;">
         <div style="margin-bottom:1rem;">
-            <img src="https://www.masters.com/favicon.ico" height="48"
+            <img src="https://res.cloudinary.com/usga-single-app/image/upload/f_auto,fl_lossy,q_auto/c_fill,dpr_2.0,g_center/v1717591996/championships/logos/USO_Logo_FULL_COLOR_FINAL.png" height="64"
                  style="image-rendering:crisp-edges;">
         </div>
-        <div style="font-family:'Playfair Display',serif; font-size:2.8rem; color:#006747; font-weight:700; letter-spacing:0.04em;">
+        <div style="font-family:'Playfair Display',serif; font-size:2.8rem; color:#002868; font-weight:700; letter-spacing:0.04em;">
             {POOL_NAME}
         </div>
         <div style="width:80px; height:3px; background:#c9a84c; margin:0.8rem auto 0.4rem auto; border-radius:2px;"></div>
@@ -443,7 +443,7 @@ def require_auth():
     with col:
         pw = st.text_input("Pool Password", type="password", placeholder="Enter password to join…")
         if st.button("Enter the Clubhouse", type="primary", use_container_width=True):
-            if pw == st.secrets.get("POOL_PASSWORD", "masters2026"):
+            if pw == st.secrets.get("POOL_PASSWORD", "usopen2026"):
                 st.session_state.authenticated = True
                 st.query_params["_a"] = "1"
                 st.rerun()
@@ -632,11 +632,11 @@ def fetch_leaderboard():
         if not events:
             return None, "No events found in ESPN response."
 
-        # Prefer Masters by name, then any in-progress event, then first available
+        # Prefer U.S. Open by name, then any in-progress event, then first available
         def event_priority(e):
             name = e.get("name", "").lower()
             desc = e.get("status", {}).get("type", {}).get("description", "").lower()
-            if "masters" in name:
+            if "u.s. open" in name or "us open" in name or "united states open" in name:
                 return 0
             if "in progress" in desc:
                 return 1
@@ -650,7 +650,7 @@ def fetch_leaderboard():
         t_status = tournament.get("status", {}).get("type", {}).get("description", "")
 
         # Log the tournament name for debugging
-        # (Masters filter removed — only Masters runs this week)
+        # (Filter prioritises U.S. Open by name; falls back to in-progress event)
 
         competitions = tournament.get("competitions", [])
         if not competitions:
@@ -723,7 +723,7 @@ def fetch_leaderboard():
             # Per-round scores from linescores.
             # ESPN stores raw stroke counts in .value (e.g. 68, 72).
             # We prefer .displayValue which is the score-to-par string ("E","-4","+2").
-            # If only raw strokes are available, convert: score-to-par = strokes - 72 (Augusta par).
+            # If only raw strokes are available, convert: score-to-par = strokes - 70 (Shinnecock par).
             round_scores = {}
             for i, ls in enumerate(player.get("linescores", []), 1):
                 dv = str(ls.get("displayValue", "")).strip()
@@ -738,7 +738,7 @@ def fetch_leaderboard():
                     if val is not None and not pd.isna(val):
                         v = int(float(val))
                         # Raw strokes are always 50+; score-to-par is rarely outside -15..+20
-                        round_scores[f"R{i}"] = (v - 72) if v > 20 else v
+                        round_scores[f"R{i}"] = (v - 70) if v > 20 else v
                 except (ValueError, TypeError):
                     pass
 
@@ -1157,7 +1157,7 @@ def fetch_odds():
         if resp.status_code == 401:
             return None, "Invalid Odds API key — check ODDS_API_KEY in secrets.toml"
         if resp.status_code == 422:
-            return None, "Masters odds not yet available from The Odds API (tournament may not be listed yet)"
+            return None, "U.S. Open odds not yet available from The Odds API (tournament may not be listed yet)"
         resp.raise_for_status()
         data = resp.json()
     except requests.RequestException as e:
@@ -1166,7 +1166,7 @@ def fetch_odds():
     if not data:
         return None, "No odds data returned"
 
-    # data is a list of events — we want the first (only Masters outright event)
+    # data is a list of events — we want the first (only U.S. Open outright event)
     event = data[0] if isinstance(data, list) and data else {}
     bookmakers = event.get("bookmakers", [])
 
@@ -1245,7 +1245,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
     st.caption(f"Best {SCORING_PICKS} of {TOTAL_PICKS} picks count · Fewer than {SCORING_PICKS} make cut = DQ")
     if PSA_MESSAGE:
         st.markdown(f"""
-        <div style="background:#f0f7f4; border-left:4px solid #006747;
+        <div style="background:#f0f4ff; border-left:4px solid #002868;
                     padding:10px 16px; border-radius:4px; margin-bottom:0.5rem;
                     color:#1a1a1a; font-size:0.95rem;">
             {PSA_MESSAGE}
@@ -1324,7 +1324,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
 
     # Hide picks until the tournament starts
     if not picks_are_locked():
-        st.info("🔒 Pick details are hidden until the Masters begins. Check the **Submit Picks** page to view your own picks.")
+        st.info("🔒 Pick details are hidden until the U.S. Open begins. Check the **Submit Picks** page to view your own picks.")
         return
 
     # Build row labels
@@ -1423,7 +1423,7 @@ def render_standings_view(picks_df, lb_data, lb_error):
     # Style the last two rows green
     def _style_summary(df):
         styles = pd.DataFrame("", index=df.index, columns=df.columns)
-        green = "background-color: #006747; color: #ffffff; font-weight: 600;"
+        green = "background-color: #002868; color: #ffffff; font-weight: 600;"
         for col in df.columns:
             styles.iloc[-2, df.columns.get_loc(col)] = green
             styles.iloc[-1, df.columns.get_loc(col)] = green
@@ -1447,7 +1447,7 @@ def _score_html(val: str, score_int: int | None = None) -> str:
     if n is None:
         return f'<span style="color:#333;">{val}</span>'
     if n < 0:
-        color = "#c8102e"   # Masters red
+        color = "#c8102e"   # red for under par
     elif n == 0:
         color = "#1a1a1a"   # near-black for Even
     else:
@@ -1493,7 +1493,7 @@ def render_leaderboard_view(lb_data, lb_error):
             cut_line_html = f'<span style="color:#c8102e;font-weight:700;">&#9986; Proj. Cut: {_fmt(worst)} or better</span>'
 
     # ── Build rows ────────────────────────────────────────────────────────────
-    r_headers = "".join(f'<th style="text-align:center;padding:8px 6px;background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;border-right:1px solid #3d7a33;white-space:nowrap;">{r}</th>' for r in round_cols)
+    r_headers = "".join(f'<th style="text-align:center;padding:8px 6px;background:#1a3570;color:#f0f5ff;font-size:0.72rem;font-weight:700;letter-spacing:.10em;border-right:1px solid #2a4a8a;white-space:nowrap;">{r}</th>' for r in round_cols)
 
     def score_cell(val, score_int=None):
         if val in (None, "", "—", "-", "nan"):
@@ -1508,9 +1508,9 @@ def render_leaderboard_view(lb_data, lb_error):
     def build_rows(df, grey=False):
         out = ""
         for i, (_, row) in enumerate(df.iterrows()):
-            bg = "#eae5d4" if (i % 2 == 1) else "#f2ede0"
+            bg = "#e4edf8" if (i % 2 == 1) else "#f0f5ff"
             if grey:
-                bg = "#e0ddd0" if (i % 2 == 1) else "#e8e4d8"
+                bg = "#d8e4f4" if (i % 2 == 1) else "#dce8f4"
             score_int = row.get("score_int", None)
             try:
                 score_int = int(score_int)
@@ -1529,14 +1529,14 @@ def render_leaderboard_view(lb_data, lb_error):
                 except (ValueError, TypeError):
                     rv_int = None
                 rv_str = str(rv) if rv not in ("—", "", None) else "—"
-                r_cells += f'<td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(rv_str, rv_int)}</td>'
+                r_cells += f'<td style="text-align:center;padding:7px 6px;border-right:1px solid #c0cce4;">{score_cell(rv_str, rv_int)}</td>'
             opacity = ' opacity:0.7;' if grey else ''
-            out += f"""<tr style="background:{bg};border-bottom:1px solid #ccc8b8;{opacity}">
-              <td style="text-align:center;padding:7px 8px;font-weight:700;color:#444;font-size:0.82rem;border-right:1px solid #ccc8b8;min-width:38px;">{row.get("position","—")}</td>
-              <td style="text-align:left;padding:7px 12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:0.85rem;border-right:1px solid #ccc8b8;min-width:170px;">{row.get("name","")}</td>
-              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(str(row.get("score","—")), score_int)}</td>
-              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{score_cell(today_val, today_int)}</td>
-              <td style="text-align:center;padding:7px 6px;border-right:1px solid #ccc8b8;">{row.get("thru","—")}</td>
+            out += f"""<tr style="background:{bg};border-bottom:1px solid #c0cce4;{opacity}">
+              <td style="text-align:center;padding:7px 8px;font-weight:700;color:#444;font-size:0.82rem;border-right:1px solid #c0cce4;min-width:38px;">{row.get("position","—")}</td>
+              <td style="text-align:left;padding:7px 12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:0.85rem;border-right:1px solid #c0cce4;min-width:170px;">{row.get("name","")}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #c0cce4;">{score_cell(str(row.get("score","—")), score_int)}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #c0cce4;">{score_cell(today_val, today_int)}</td>
+              <td style="text-align:center;padding:7px 6px;border-right:1px solid #c0cce4;">{row.get("thru","—")}</td>
               {r_cells}
             </tr>"""
         return out
@@ -1548,7 +1548,7 @@ def render_leaderboard_view(lb_data, lb_error):
         n_cols = 5 + len(round_cols)
         cut_section = f"""
         <tr>
-          <td colspan="{n_cols}" style="background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;text-align:center;padding:6px;">
+          <td colspan="{n_cols}" style="background:#1a3570;color:#f0f5ff;font-size:0.72rem;font-weight:700;letter-spacing:.10em;text-align:center;padding:6px;">
             &#9986;&nbsp; MISSED CUT / WD / DQ &nbsp;({len(cut)} players)
           </td>
         </tr>
@@ -1558,10 +1558,10 @@ def render_leaderboard_view(lb_data, lb_error):
     if status_str:
         refresh_note = f"{status_str} &nbsp;·&nbsp; {refresh_note}"
 
-    cut_bar = f'<div style="text-align:center;padding:5px 0 3px;font-size:0.82rem;background:#f2ede0;border-bottom:1px solid #ccc8b8;">{cut_line_html}</div>' if cut_line_html else ""
+    cut_bar = f'<div style="text-align:center;padding:5px 0 3px;font-size:0.82rem;background:#f0f5ff;border-bottom:1px solid #c0cce4;">{cut_line_html}</div>' if cut_line_html else ""
 
     # Sticky-header columns
-    th_style = "position:sticky;top:0;z-index:2;background:#2d5a27;color:#f2ede0;font-size:0.72rem;font-weight:700;letter-spacing:.10em;padding:8px 6px;border-right:1px solid #3d7a33;white-space:nowrap;"
+    th_style = "position:sticky;top:0;z-index:2;background:#1a3570;color:#f0f5ff;font-size:0.72rem;font-weight:700;letter-spacing:.10em;padding:8px 6px;border-right:1px solid #2a4a8a;white-space:nowrap;"
     n_rows     = len(active) + len(cut)
     # Full height — no cap, show every player without internal scrolling
     tbl_height = 34 + n_rows * 34 + (0 if cut.empty else 42)
@@ -1573,22 +1573,22 @@ def render_leaderboard_view(lb_data, lb_error):
 <style>
   * {{ box-sizing: border-box; margin: 0; padding: 0; }}
   body {{
-    background: linear-gradient(180deg, #5b9bd5 0%, #7ab8e8 28%, #5aaa5a 65%, #2d7a2d 100%);
+    background: linear-gradient(180deg, #c8dff5 0%, #5a9fd4 30%, #1a3a8a 70%, #002868 100%);
     padding: 22px 10px 28px 10px;
     font-family: Arial, Helvetica, sans-serif;
   }}
   .board {{
     max-width: 820px;
     margin: 0 auto;
-    background: #f2ede0;
-    border: 6px solid #2d5a27;
+    background: #f0f5ff;
+    border: 6px solid #1a3570;
     border-radius: 4px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     overflow: hidden;
   }}
   .cap {{
-    background: #f2ede0;
-    border-bottom: 3px solid #2d5a27;
+    background: #f0f5ff;
+    border-bottom: 3px solid #1a3570;
     text-align: center;
     padding: 12px 0 8px 0;
     font-family: Georgia, 'Times New Roman', serif;
@@ -1599,7 +1599,7 @@ def render_leaderboard_view(lb_data, lb_error):
   }}
   .badge {{
     display: inline-block;
-    background: #006747;
+    background: #002868;
     color: #fff;
     font-family: Arial, sans-serif;
     font-size: 0.68rem;
@@ -1626,8 +1626,8 @@ def render_leaderboard_view(lb_data, lb_error):
     z-index: 2;
   }}
   .footer {{
-    background: #2d5a27;
-    color: #c8d8c0;
+    background: #1a3570;
+    color: #b8cce8;
     text-align: center;
     font-size: 0.68rem;
     padding: 6px;
@@ -1637,7 +1637,7 @@ def render_leaderboard_view(lb_data, lb_error):
 </head>
 <body>
 <div class="board">
-  <div class="cap">LEADERS <span class="badge">ROUND {round_num}</span></div>
+  <div class="cap">U.S. OPEN <span class="badge">ROUND {round_num}</span></div>
   {cut_bar}
   <div class="scroll-wrap">
     <table>
@@ -1762,7 +1762,7 @@ def render_submit_view(picks_df):
 
     # ── Locked: picks are hidden, but let people look up their own ────────────
     if locked:
-        st.warning("🔒 **Picks are locked** — the Masters has started. Picks are hidden until the tournament ends.")
+        st.warning("🔒 **Picks are locked** — the U.S. Open has started. Picks are hidden until the tournament ends.")
         st.markdown("#### View Your Picks")
         name_lookup = st.text_input("Your name:", placeholder="First Last")
         pin_lookup  = st.text_input("Your PIN:", placeholder="4 digits", max_chars=4)

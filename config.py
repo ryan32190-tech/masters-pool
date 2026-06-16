@@ -1,11 +1,11 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# config.py  –  Masters Pool Configuration
+# config.py  –  US Open Pool Configuration
 #
 # This is the main file you edit each year. Update tiers from Vegas odds,
 # adjust the prize structure, and you're done.
 # ──────────────────────────────────────────────────────────────────────────────
 
-POOL_NAME = "Masters Pool 2026"
+POOL_NAME = "US Open Pool 2026"
 
 # ── SCORING RULES ─────────────────────────────────────────────────────────────
 # Each participant picks 14 players (see TIERS below for how many per tier).
@@ -38,7 +38,7 @@ PICKS_PER_TIER = {
 
 # Player lists — update these from Vegas odds before the tournament.
 TIERS = {
-    # ── 2026 Masters — tiered by Vegas odds ──
+    # ── 2026 U.S. Open — tiered by Vegas odds (update before tournament) ──
     "Tier 1": [
         "Scottie Scheffler",   # +410
         "Jon Rahm",            # +850
@@ -156,7 +156,7 @@ REFRESH_INTERVAL_SECONDS = 60
 # as ODDS_API_KEY = "your_key_here"
 # Free tier: 500 requests/month (well within limits at 60-second refresh)
 ODDS_API_URL = (
-    "https://api.the-odds-api.com/v4/sports/golf_masters_tournament_winner/odds"
+    "https://api.the-odds-api.com/v4/sports/golf_us_open_championship_winner/odds"
     "?regions=us&markets=outrights&oddsFormat=american"
 )
 # Preferred bookmaker key — falls back to averaging all available books
@@ -168,9 +168,9 @@ CHAT_SHEET_TAB  = "Chat"
 
 # ── TOURNAMENT DATES ──────────────────────────────────────────────────────────
 # Picks lock when the first round starts.
-FIRST_ROUND_START = "2026-04-10 00:01"   # Eastern Time — set to midnight so lock is always active
+FIRST_ROUND_START = "2026-06-18 00:01"   # Eastern Time — set to midnight so lock is always active
 LOCK_PICKS_ON_START = True
 
 # ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
 # Displayed at the top of the Pool Standings page. Set to "" to hide it.
-PSA_MESSAGE = "The prize pool is set. Here we go."
+PSA_MESSAGE = "Hey guys check me out, I'm Mike Loh!"
