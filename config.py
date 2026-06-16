@@ -18,7 +18,7 @@ SCORING_PICKS = 8   # Best N scores count
 # Tiers 1–11: pick exactly 1 player from each.
 # Tiers 12–14: combined longshot pool — pick any 3 from the list.
 #
-# Updated June 15, 2026 from FanDuel / CBS Sports odds.
+# Updated June 15, 2026 from DraftKings odds.
 
 PICKS_PER_TIER = {
     "Tier 1":      1,
@@ -32,91 +32,140 @@ PICKS_PER_TIER = {
     "Tier 9":      1,
     "Tier 10":     1,
     "Tier 11":     1,
-    "Tiers 12-14": 3,   # Combined longshot tier — pick any 3
+    "Tiers 12-14": 3,   # Combined longshot pool — pick any 3
 }
 
-# Player lists — updated from FanDuel odds (CBS Sports, June 14 2026).
+# Player lists — from DraftKings odds (June 15, 2026).
 TIERS = {
-    # ── 2026 U.S. Open at Shinnecock Hills — tiered by Vegas odds ─────────────
+    # ── Tier 1: Elite Contenders ──────────────────────────────────────────────
     "Tier 1": [
-        "Scottie Scheffler",   # +550
-        "Rory McIlroy",        # +1200
+        "Scottie Scheffler",   # +455
+        "Rory McIlroy",        # +940
+        "Jon Rahm",            # +1025
     ],
+    # ── Tier 2: Top-5 Group ───────────────────────────────────────────────────
     "Tier 2": [
-        "Jon Rahm",            # +1300
-        "Tommy Fleetwood",     # +2000
-        "Xander Schauffele",   # +2000
+        "Xander Schauffele",   # +1850
+        "Cameron Young",       # +2000
+        "Matthew Fitzpatrick", # +2500
+        "Tommy Fleetwood",     # +2500
+        "Ludvig Aberg",        # +2600
     ],
+    # ── Tier 3: Major Winners Lurking ─────────────────────────────────────────
     "Tier 3": [
-        "Ludvig Aberg",        # +2200
-        "Bryson DeChambeau",   # +2200
-        "Cameron Young",       # +2200
-        "Brooks Koepka",       # +2500  ⚠ hand injury — monitor status
+        "Bryson DeChambeau",   # +2700
+        "Brooks Koepka",       # +2900
+        "Collin Morikawa",     # +3300
     ],
+    # ── Tier 4: Strong Value ──────────────────────────────────────────────────
     "Tier 4": [
-        "Matthew Fitzpatrick", # +2700
-        "Collin Morikawa",     # +3500
-        "Sam Burns",           # +3500
+        "Sam Burns",           # +3700
+        "Russell Henley",      # +3700
+        "Si Woo Kim",          # +3900
+        "Justin Rose",         # +4200
+        "Wyndham Clark",       # +4200
     ],
+    # ── Tier 5: Mid-Tier Names ────────────────────────────────────────────────
     "Tier 5": [
-        "Justin Rose",         # +4000
-        "Tyrrell Hatton",      # +4000
-        "Russell Henley",      # +4000
-        "Wyndham Clark",       # +4000
-        "Justin Thomas",       # +4000
+        "Christopher Gotterup", # +4400
+        "Justin Thomas",       # +4400
+        "Tyrrell Hatton",      # +4500
+        "Patrick Cantlay",     # +4500
+        "Patrick Reed",        # +4800
     ],
+    # ── Tier 6: Dark Horses ───────────────────────────────────────────────────
     "Tier 6": [
-        "Si Woo Kim",          # +4500
-        "Christopher Gotterup", # +5000
-        "Viktor Hovland",      # +5000
-        "Patrick Cantlay",     # +5500
-        "Patrick Reed",        # +5500
-        "Hideki Matsuyama",    # +5500
+        "Viktor Hovland",      # +5300
+        "J.J. Spaun",          # +6000
+        "Hideki Matsuyama",    # +6400
+        "Jordan Spieth",       # +6800
+        "Joaquin Niemann",     # +6800
     ],
+    # ── Tier 7: Sleepers ──────────────────────────────────────────────────────
     "Tier 7": [
-        "Robert MacIntyre",    # +6000
-        "Shane Lowry",         # +6000
-        "Jordan Spieth",       # +6500
-        "J.J. Spaun",          # +6500  (defending champion)
-        "Joaquin Niemann",     # +7000
+        "Ben Griffin",         # +7200
+        "Min Woo Lee",         # +7200
+        "Maverick McNealy",    # +7400
+        "Adam Scott",          # +7400
+        "Shane Lowry",         # +7400
+        "Kurt Kitayama",       # +7800
+        "Robert MacIntyre",    # +7800
     ],
+    # ── Tier 8: Long-Odds Names ───────────────────────────────────────────────
     "Tier 8": [
-        "Min Woo Lee",         # +8000
-        "Ben Griffin",         # +8000
-    ],
-    "Tier 9": [
-        "Jake Knapp",          # +10000
-        "Akshay Bhatia",       # +10000
-        "Aaron Rai",           # +10000  (2026 PGA Championship winner)
-        "Harris English",      # +10000
-        "Alex Fitzpatrick",    # +10000
-    ],
-    "Tier 10": [
-        "Maverick McNealy",    # +10000
-        "Cameron Smith",       # +10000
-        "Gary Woodland",       # +10000
-        "Ryan Gerard",         # +10000
-        "Nicolai Hojgaard",    # +10000
-    ],
-    "Tier 11": [
-        "Adam Scott",          # +10000
-        "Jackson Koivun",      # +10000
-        "Kristoffer Reitan",   # +10000
-        "Sepp Straka",         # +10000
-        "Kurt Kitayama",       # +10000
+        "Harris English",      # +8600
+        "Kristoffer Reitan",   # +8800
+        "Jake Knapp",          # +9400
+        "David Puig",          # +9400
+        "Nicolai Hojgaard",    # +9600
+        "Alex Smalley",        # +10000
         "Alexander Noren",     # +10000
+        "Aaron Rai",           # +10000
     ],
+    # ── Tier 9: Longshots ─────────────────────────────────────────────────────
+    "Tier 9": [
+        "Sepp Straka",         # +10500
+        "Ryan Gerard",         # +11000
+        "Rickie Fowler",       # +11000
+        "Gary Woodland",       # +11500
+        "Alex Fitzpatrick",    # +12000
+        "Jason Day",           # +13000
+        "Akshay Bhatia",       # +13500
+        "Keegan Bradley",      # +14000
+    ],
+    # ── Tier 10: Big Swing ────────────────────────────────────────────────────
+    "Tier 10": [
+        "Keith Mitchell",      # +15000
+        "Jacob Bridgeman",     # +15500
+        "Jackson Koivun",      # +15500
+        "Dustin Johnson",      # +16000
+        "Cameron Smith",       # +16000
+        "Sahith Theegala",     # +16000
+        "Harry Hall",          # +16500
+        "Nick Taylor",         # +16500
+        "Corey Conners",       # +18000
+        "Pierceson Coody",     # +18500
+        "Sudarshan Yellamaraju", # +19000
+    ],
+    # ── Tier 11: 20k–28k ──────────────────────────────────────────────────────
+    "Tier 11": [
+        "Daniel Berger",       # +20000
+        "Sungjae Im",          # +20000
+        "Benjamin James",      # +21000
+        "Davis Thompson",      # +23000
+        "Brian Harman",        # +23000
+        "Tom Kim",             # +23000
+        "Ryo Hisatsune",       # +23000
+        "Max Greyserman",      # +25000
+        "Lucas Herbert",       # +25000
+        "Jayden Schaper",      # +25000
+        "Ryan Fox",            # +25000
+        "Jackson Suber",       # +27000
+        "Sam Stevens",         # +27000
+        "Michael Brennan",     # +27000
+        "Matt McCarty",        # +28000
+        "Carlos Ortiz",        # +28000
+    ],
+    # ── Tiers 12–14: The Field (pick any 3) ──────────────────────────────────
     "Tiers 12-14": [
-        # Pick any 3 from this longshot pool
-        "Sam Stevens", "Ryan Fox", "Sergio Garcia", "Max Greyserman",
-        "Dustin Johnson", "Casey Jarvis", "Carlos Ortiz", "Tom McKibbin",
-        "Haotong Li", "Nico Echavarria", "Rasmus Neergaard-Petersen",
-        "Michael Kim", "Andrew Novak", "Aldrich Potgieter", "Michael Brennan",
-        "Sami Valimaki", "Davis Riley", "Charl Schwartzel", "Ben Campbell",
-        "Ethan Fang", "Danny Willett", "Mason Howell", "Mateo Pulcini",
-        "Jackson Herrington", "Naoyuki Kataoka", "Brandon Wu",
-        "Sungjae Im", "Keegan Bradley", "Daniel Berger", "Corey Conners",
-        "Jacob Bridgeman", "Rasmus Hojgaard",
+        "Andrew Putnam", "Andrew Novak", "Michael Kim",
+        "Adrien Dumont de Chassart", "John Keefer", "Preston Stout",
+        "Patrick Rodgers", "John Parry", "Nico Echavarria", "Max McGreevy",
+        "Matthias Schmid", "Chris Kirk", "William Mouw", "Nathan Kimsey",
+        "Kevin Roy", "Cooper Dossey", "Emiliano Grillo", "Neal Shipley",
+        "Billy Horschel", "Ben Kohles", "Laurie Canter", "Adrien Saddier",
+        "Ugo Coussaud", "Chandler Phillips", "Matthew Jordan", "Caleb Surratt",
+        "Zac Blair", "Cole Hammer", "Padraig Harrington", "Taylor Montgomery",
+        "Niklas Norgaard", "Dylan Wu", "Alejandro Tosti", "Carl Yuan",
+        "Ben Silverman", "Peter Uihlein", "Nick Hardy", "Arni Sveinsson",
+        "Jimmy Stanger", "Ethan Fang", "Eric Lee", "James Nicholas",
+        "Graeme McDowell", "Taihei Sato", "Ryder Cowan", "Jackson Herrington",
+        "Greyson Leach", "Jackson Ormond", "Rocco Repetto", "Logan Reilly",
+        "Mateo Pulcini", "Chase Kyes", "Marcelo Rozo", "Kaito Onishi",
+        "Jake Peacock", "Jackson Van Paris", "J.B. Holmes", "Filippo Celli",
+        "Manav Shah", "Jake Sollon", "Brandon Wu", "Brandon Holtz",
+        "Ryuichi Oiwa", "Robbie Higgins", "Vaughn Harber", "Taek Soo Kim",
+        "Matt Robles", "Marek Fleming", "Hamilton Coleman",
     ],
 }
 
