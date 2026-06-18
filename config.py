@@ -202,7 +202,7 @@ CHAT_SHEET_TAB  = "Chat"
 # Picks lock automatically at midnight ET on June 18 (start of tournament day).
 # Set LOCK_PICKS_ON_START = True to force-lock immediately (use morning of R1).
 FIRST_ROUND_START = "2026-06-18 00:01"   # Eastern Time
-LOCK_PICKS_ON_START = False              # ← False = open for picks until June 18
+LOCK_PICKS_ON_START = True               # ← Locked — tournament is live
 
 # ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
 # Displayed at the top of the Pool Standings page. Set to "" to hide it.
