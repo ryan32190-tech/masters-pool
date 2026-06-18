@@ -172,13 +172,15 @@ TIERS = {
 # ── PRIZE STRUCTURE ───────────────────────────────────────────────────────────
 BUY_IN = 100   # Per person (displayed for reference)
 
+
+# Prizes are percentages of the total pool (entries × BUY_IN).
+# Must sum to 1.0 (100%).
 PRIZES = {
-    "1st Round Leader": 200,
-    "2nd Round Leader": 200,
-    "3rd Round Leader": 200,
-    "Champion":        1500,
-    "Runner Up":        500,
-    "3rd Overall":      200,
+    "1st Round Leader": 0.10,
+    "2nd Round Leader": 0.10,
+    "3rd Round Leader": 0.10,
+    "Champion":         0.50,
+    "Runner Up":        0.20,
 }
 
 # ── LEADERBOARD API ───────────────────────────────────────────────────────────

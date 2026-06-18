@@ -1674,11 +1674,11 @@ def render_prizes_view(picks_df, lb_data):
     current_round = lb_data.get("round", 1) if lb_data else 0
 
     participants = len(picks_df)
-    total_payout = sum(PRIZES.values())
+    total_pool   = participants * BUY_IN
 
     m1, m2 = st.columns(2)
     with m1: st.metric("Participants", participants)
-    with m2: st.metric("Total Payout", f"${total_payout:,}")
+    with m2: st.metric("Total Payout", f"${total_pool:,}")
 
     st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
@@ -1688,7 +1688,8 @@ def render_prizes_view(picks_df, lb_data):
         "3rd Round Leader": 3,
     }
 
-    for label, amount in PRIZES.items():
+    for label, pct in PRIZES.items():
+        amount = int(round(pct * total_pool))
         leader_str = ""
         if label in round_label_map and not picks_df.empty and not lb.empty:
             rnd = round_label_map[label]
@@ -1697,21 +1698,20 @@ def render_prizes_view(picks_df, lb_data):
                 ldr = get_round_leader(picks_df, lb, rnd)
                 if ldr:
                     leader_str = f"→ {ldr}"
-        elif label in ("Champion", "Runner Up", "3rd Overall") and not picks_df.empty and lb_data and lb_data.get("status") == "Final":
+        elif label in ("Champion", "Runner Up") and not picks_df.empty and lb_data and lb_data.get("status") == "Final":
             stds = calculate_standings(picks_df, lb_data)
             active_s = [s for s in stds if not s["dq"]]
             if label == "Champion" and len(active_s) >= 1:
                 leader_str = f"→ 🏆 {active_s[0]['participant']} ({active_s[0]['total_display']})"
             elif label == "Runner Up" and len(active_s) >= 2:
                 leader_str = f"→ {active_s[1]['participant']} ({active_s[1]['total_display']})"
-            elif label == "3rd Overall" and len(active_s) >= 3:
-                leader_str = f"→ {active_s[2]['participant']} ({active_s[2]['total_display']})"
 
+        pct_display = f"{int(pct * 100)}%"
         st.markdown(f"""
         <div class="prize-card">
             <div style="display:flex; justify-content:space-between; align-items:baseline;">
                 <span class="prize-card-label">{label}</span>
-                <span class="prize-card-amount">${amount:,}</span>
+                <span class="prize-card-amount">${amount:,} <span style="font-size:0.85rem; color:#888;">({pct_display})</span></span>
             </div>
             {"<div class='prize-card-leader'>" + leader_str + "</div>" if leader_str else ""}
         </div>
