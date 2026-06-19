@@ -895,6 +895,22 @@ def lookup_player(name: str, score_map: dict) -> dict | None:
     for lb_key, val in score_map.items():
         if key in lb_key or lb_key in key:
             return val
+    # Last-name + first-initial fallback (handles Matt vs Matthew, etc.)
+    # Only returns a result when exactly one leaderboard player matches,
+    # so shared surnames (Fitzpatrick) stay unambiguous.
+    parts = key.split()
+    if len(parts) >= 2 and parts[0]:
+        last, first_initial = parts[-1], parts[0][0]
+        candidates = []
+        for lb_key, val in score_map.items():
+            lb_parts = lb_key.split()
+            if (len(lb_parts) >= 2
+                    and lb_parts[-1] == last
+                    and lb_parts[0]
+                    and lb_parts[0][0] == first_initial):
+                candidates.append(val)
+        if len(candidates) == 1:
+            return candidates[0]
     return None
 
 
