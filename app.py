@@ -853,10 +853,18 @@ def _normalize(s: str) -> str:
 def build_score_map(lb: pd.DataFrame, cut_score: int | None = None) -> dict:
     """
     Returns a dict: normalized_name -> {score_int, score_display, made_cut, position}
-    Includes both exact and last-name-only keys for fuzzy matching.
+    Includes last-name-only keys for fuzzy matching, but ONLY when that last name
+    is unique in the field (prevents e.g. Alex Fitzpatrick / Matt Fitzpatrick collision).
     If cut_score is provided, players scoring worse than the cut are projected
     as missing the cut even if ESPN hasn't officially marked them yet (Round 2).
     """
+    # First pass: count how many players share each last name
+    last_name_counts: dict[str, int] = {}
+    for _, row in lb.iterrows():
+        parts = _normalize(row["name"]).split()
+        if len(parts) > 1:
+            last_name_counts[parts[-1]] = last_name_counts.get(parts[-1], 0) + 1
+
     score_map = {}
     for _, row in lb.iterrows():
         made_cut = row["made_cut"]
@@ -872,9 +880,9 @@ def build_score_map(lb: pd.DataFrame, cut_score: int | None = None) -> dict:
         }
         key = _normalize(row["name"])
         score_map[key] = info
-        # Also index by last name alone
+        # Only index by last name if it is unique in the field
         parts = key.split()
-        if len(parts) > 1:
+        if len(parts) > 1 and last_name_counts.get(parts[-1], 0) == 1:
             score_map[parts[-1]] = info
     return score_map
 
