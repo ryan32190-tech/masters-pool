@@ -1149,9 +1149,14 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, through_round: in
         for p in picks:
             key = _normalize(p)
             s = cumulative_map.get(key)
+            # 1. Substring match (same as lookup_player)
             if s is None:
-                # First-initial + last-name fallback (handles Matt vs Matthew, etc.)
-                # Only use it when exactly one leaderboard player matches.
+                for cm_key, cm_val in cumulative_map.items():
+                    if key in cm_key or cm_key in key:
+                        s = cm_val
+                        break
+            # 2. First-initial + last-name fallback (handles Matt vs Matthew, etc.)
+            if s is None:
                 parts = key.split()
                 if len(parts) >= 2 and parts[0]:
                     last, initial = parts[-1], parts[0][0]
