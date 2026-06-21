@@ -1109,6 +1109,14 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, through_round: in
         return None
 
     # Build cumulative score map: player_name → sum of R1..RN
+    # First pass: find surnames shared by multiple players so we can avoid
+    # creating ambiguous last-name-only keys (e.g. Alex vs Matthew Fitzpatrick).
+    last_name_counts_cm: dict[str, int] = {}
+    for _, row in lb.iterrows():
+        parts = _normalize(str(row["name"])).split()
+        if len(parts) > 1:
+            last_name_counts_cm[parts[-1]] = last_name_counts_cm.get(parts[-1], 0) + 1
+
     cumulative_map: dict[str, int] = {}
     for _, row in lb.iterrows():
         total = 0
@@ -1126,8 +1134,10 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, through_round: in
         if valid:
             key = _normalize(str(row["name"]))
             cumulative_map[key] = total
-            last = key.split()[-1] if key.split() else key
-            cumulative_map.setdefault(last, total)
+            parts = key.split()
+            # Only index by last name when the surname is unique in the field
+            if len(parts) > 1 and last_name_counts_cm.get(parts[-1], 0) == 1:
+                cumulative_map[parts[-1]] = total
 
     if not cumulative_map:
         return None
@@ -1140,8 +1150,18 @@ def get_round_leader(picks_df: pd.DataFrame, lb: pd.DataFrame, through_round: in
             key = _normalize(p)
             s = cumulative_map.get(key)
             if s is None:
-                last = key.split()[-1] if key.split() else key
-                s = cumulative_map.get(last)
+                # First-initial + last-name fallback (handles Matt vs Matthew, etc.)
+                # Only use it when exactly one leaderboard player matches.
+                parts = key.split()
+                if len(parts) >= 2 and parts[0]:
+                    last, initial = parts[-1], parts[0][0]
+                    candidates = [
+                        v for k, v in cumulative_map.items()
+                        if k.split() and k.split()[-1] == last
+                        and k.split()[0] and k.split()[0][0] == initial
+                    ]
+                    if len(candidates) == 1:
+                        s = candidates[0]
             if s is not None:
                 scores.append(s)
         if len(scores) >= SCORING_PICKS:
