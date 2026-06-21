@@ -204,6 +204,16 @@ CHAT_SHEET_TAB  = "Chat"
 FIRST_ROUND_START = "2026-06-18 00:01"   # Eastern Time
 LOCK_PICKS_ON_START = True               # ← Locked — tournament is live
 
+# ── ROUND LEADERS (manual override) ──────────────────────────────────────────
+# Set these manually at the end of each round to guarantee accuracy.
+# Use the participant's name exactly as it appears in the Pool Standings.
+# Set to None to leave blank (app will not display a winner for that round).
+ROUND_LEADERS = {
+    1: None,        # e.g. "C Meyer"
+    2: None,        # e.g. "C Meyer"
+    3: "C Meyer",   # ← Set this to whoever won Round 3
+}
+
 # ── PSA / ANNOUNCEMENT BANNER ─────────────────────────────────────────────────
 # Displayed at the top of the Pool Standings page. Set to "" to hide it.
 PSA_MESSAGE = "US Open Pool is OPEN! Submit your picks before June 18. Good luck at Shinnecock! 🏌️"

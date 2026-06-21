@@ -30,7 +30,7 @@ from config import (
     POOL_NAME, PICKS_PER_TIER, TIERS, TOTAL_PICKS, SCORING_PICKS,
     ESPN_URL, REFRESH_INTERVAL_SECONDS, PICKS_SHEET_TAB, CHAT_SHEET_TAB,
     FIRST_ROUND_START, LOCK_PICKS_ON_START, PRIZES, BUY_IN,
-    ODDS_API_URL, ODDS_PREFERRED_BOOK, PSA_MESSAGE,
+    ODDS_API_URL, ODDS_PREFERRED_BOOK, PSA_MESSAGE, ROUND_LEADERS,
 )
 
 # ── PAGE CONFIG ───────────────────────────────────────────────────────────────
@@ -1740,10 +1740,14 @@ def render_prizes_view(picks_df, lb_data):
     for label, pct in PRIZES.items():
         amount = int(round(pct * total_pool))
         leader_str = ""
-        if label in round_label_map and not picks_df.empty and not lb.empty:
+        if label in round_label_map:
             rnd = round_label_map[label]
-            # Only show winner once that round is fully complete (round has advanced past it)
-            if current_round > rnd:
+            # 1) Check manual override in config.ROUND_LEADERS first
+            manual = ROUND_LEADERS.get(rnd) if ROUND_LEADERS else None
+            if manual:
+                leader_str = f"→ {manual}"
+            elif not picks_df.empty and not lb.empty and current_round > rnd:
+                # 2) Fall back to automatic computation only if no manual entry set
                 ldr = get_round_leader(picks_df, lb, rnd)
                 if ldr:
                     leader_str = f"→ {ldr}"
